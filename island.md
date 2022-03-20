@@ -1,0 +1,22 @@
+# List of puzzles
+
+- signal fire
+  - need firewood
+  - candle
+  - spyglass
+  - (where to learn you need all 3 woods?)
+- chest
+  - needs key
+  - bust open with oar? (fake out)
+- swim to wreck
+  - needs luck charm
+- need lumber for fire
+  - need various wood (chest, driftwood, ship's wheel)
+  - need axe
+- can't stand, almost dead
+  - need to crawl (guided)
+- jungle entrance
+  - need food and water before venturing into jungle
+- get coconuts
+  - need to shake tree (guided)
+  - need knife
