@@ -42,7 +42,7 @@ on_startup {
    //:pocket "spyglass";
    //:goto "shipwreck";
 
-   :goto "village_hut";
+   :goto "cliffs_e";
    :pocket "candle";
    :pocket "matchbook";
 
@@ -570,13 +570,13 @@ objects {
    blue_marble: object "blue marble" msg="A small, smooth, blue pebble{reminds_of_eye}. It feels hot to the touch, as if it was alive.";
 
    // wearing
-   your_pants: object "pants" msg="Comfortable everyday sailor pants." wearable="true";
-   your_earing: object "silver earing" msg="A small silver teardrop earing" wearable="true";
+   your_pants: object "some pants" msg="Comfortable everyday sailor pants." wearable="true";
+   your_earing: object "a gold earing" msg="A small silver teardrop earing" wearable="true";
 
    // beach
    pool :scenery "pool" at="beach_ww_rocky" msg="A small pool of crystal clear water. Drinkable.";
-   medallion :object "a silver medallion" msg="It's attached to leather cordage and seems cold to the touch. Ancient jewelry? Magic?" get_message = "You suddenly feel luckier." wearable="true" at ="cliffside_east";
-   knife          : object "a knife" at = "waters_edge" msg="It appears quite sharp.";
+   medallion :object "a silver medallion" msg="It's attached to leather cordage and seems cold to the touch." get_message = "You suddenly feel luckier." wearable="true" at ="cliffside_east";
+   knife: object "a knife" at = "waters_edge" msg="It appears quite sharp.";
    oar: object "an oar" at ="beach_w";
    broken_oar: object "a broken oar"  msg="Broken in half, useless.";
    coconut_trees: object "coconut trees" at="beach_w" msg="Coconuts are delicious. But they are up to high.";
@@ -1294,13 +1294,13 @@ on_command {
    //    :inventory;
    //    // buffs
    //    :append "buffs: ";
-   //    :if (is_worn("medalion")) {
+   //    :if (is_worn("medallion")) {
    //    :print "<luck<12>>";
    //    }
    // }
-   :if (is_carried("medalion")) {
-      :match "wear medalion" {
-         : wear "medalion" ;
+   :if (is_carried("medallion")) {
+      :match "wear medallion" {
+         : wear "medallion" ;
          : print "You shiver, but suddently feel quite a bit luckier.";
       }
    }
