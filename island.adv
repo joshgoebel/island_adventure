@@ -35,22 +35,24 @@ on_startup {
 
    :set_false "tutorial_on";
 
-   //:gosub "ask_tutorial";
+   :gosub "title_screen";
+   :gosub "ask_tutorial";
    :gosub "bootup";
 
    //:goto "western_heights";
    //:pocket "spyglass";
    //:goto "shipwreck";
 
-   :goto "cliffs_e_clearing";
-   :goto "quiet_grove";
+   //:goto "cliffs_e_clearing";
+   //:goto "quiet_grove";
    //:pocket "candle";
    //:pocket "matchbook";
 
-   :pocket "red_marble";
-   :pocket "blue_marble";
+   //:pocket "red_marble";
+   //:pocket "blue_marble";
 
-   :create "wolf";
+   //:create "wolf";
+   :goto "beach";
 
 
    // : beep millis = "100"  pitch = "6" ;
@@ -97,40 +99,41 @@ strings {
 ######################################
 
 booleans {
+  is_debug: boolean "true";
 
-   has_seen_cliff_steps: boolean "false";
-   has_looked : boolean "false";
-   has_status : boolean "false";
-   dream_intro : boolean "false";
-   tutorial_on : boolean "true";
-   game_started: boolean "false";
-   is_wolf_awake: boolean "false";
-   has_seen_wolf: boolean "false";
-   always: boolean "true";
-   knows_to_swim: boolean "false";
-   has_visited_grove: boolean "false";
+  has_seen_cliff_steps: boolean "false";
+  has_looked : boolean "false";
+  has_status : boolean "false";
+  dream_intro : boolean "false";
+  tutorial_on : boolean "true";
+  game_started: boolean "false";
+  is_wolf_awake: boolean "false";
+  has_seen_wolf: boolean "false";
+  always: boolean "true";
+  knows_to_swim: boolean "false";
+  has_visited_grove: boolean "false";
 
-   tut_look_debris: boolean "false";
-   tut_look_gull: boolean "false";
-   tut_eat_gull: boolean "false";
-   tut_catch_gull: boolean "false";
-   tut_look_around: boolean "false";
-   tut_look_sand: boolean "false";
+  tut_look_debris: boolean "false";
+  tut_look_gull: boolean "false";
+  tut_eat_gull: boolean "false";
+  tut_catch_gull: boolean "false";
+  tut_look_around: boolean "false";
+  tut_look_sand: boolean "false";
 
-   // award
-   award_bookworm: boolean "false";
-   award_god_fearing: boolean "false";
-   award_message_in_a_bottle: boolean "false";
-   award_seagull: boolean "false";
-   award_acorn: boolean "false";
-   award_signal_fire: boolean "false";
+  // award
+  award_bookworm: boolean "false";
+  award_god_fearing: boolean "false";
+  award_message_in_a_bottle: boolean "false";
+  award_seagull: boolean "false";
+  award_acorn: boolean "false";
+  award_signal_fire: boolean "false";
 
-   // cutscenes
-   cutsceen_grove_destroy_seen: boolean "false";
-   cutsceen_plant_acorn_seen: boolean "false";
-   cutsceen_signal_fire_seen: boolean "false";
+  // cutscenes
+  cutsceen_grove_destroy_seen: boolean "false";
+  cutsceen_plant_acorn_seen: boolean "false";
+  cutsceen_signal_fire_seen: boolean "false";
 
-   lit_candle: boolean "false";
+  lit_candle: boolean "false";
 }
 
 integers {
@@ -848,6 +851,12 @@ on_command {
      :done;
    }
 
+   :match "tutorial on" {
+     :set_true "tutorial_on";
+     :tutorial "Tutorial turned on.";
+     :done;
+   }
+
    :if (is_carried("candle")) {
       :match "light candle" {
          :if (is_carried("matchbook")) {
@@ -1510,8 +1519,8 @@ on_command {
    // fun utils
 
    :match "stats -" { :gosub "stats"; }
-   :match "whoami _" { :print "Jack"; }
-   :match "version _" { :print "0.1 beta"; }
+   :match "whoami -" { :print "Jim Hawkins"; }
+   :match "version -" { :print "0.2 beta"; }
 
 }
 
@@ -1527,49 +1536,49 @@ on_command {
 ######################################
 
 on_tick {
+  // DEBUG
+  :if (is_debug) {
+    :print {( "linger" + linger() )};
+  }
 
-   :if (is_present("coconut_trees")) {
-      :match "look trees" {
-         :mask {
-            :if (tutorial_on) {
-               :tutorial "Perhaps you could <shake<6>> the trees? IE: <shake trees<6>>";
-            }
-         }
-      }
-   }
+  // booleans
+  :if (is_present("wolf")) { :set_true "has_seen_wolf"; }
+  :if (is_at("quiet_grove")) { :set_true "has_visited_grove"; }
 
-   :print {( "linger" + linger() )};
+  // ****************
+  //  chase the wolf
 
-   // ****************
-   //  chase the wolf
+  :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() > 4 ) {
+    :print "<The wolf looks at you, then darts off to the north<13>>";
+    :destroy "wolf";
+    :create "wolf" target="cliffs_e";
+  }
 
-   :if (is_at("quiet_grove")) {
-      :set_true "has_visited_grove";
-   }
-
-   :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() > 4 ) {
-      :print "<The wolf looks at you, then darts off to the north<13>>";
+  :if (is_present("wolf") && is_at("cliffs_e") ) {
+    :match "look wolf" {
+      :print "<The wolf looks back at you, then lopes off to the west<13>>";
       :destroy "wolf";
-      :create "wolf" target="cliffs_e";
-   }
+      :create "wolf" target="jungle_ee";
+    }
+  }
 
-
-   :if (is_present("wolf") && is_at("cliffs_e") ) {
-      :match "look wolf" {
-         :print "<The wolf looks back at you, then lopes off to the west<13>>";
-         :destroy "wolf";
-         :create "wolf" target="jungle_ee";
-      }
-   }
-
-    :if (is_present("wolf") && is_at("jungle_ee") ) {
-      :print "<The wolf gazes off into the jungle then back, as if asking you to follow.<13>>";
+  :if (is_present("wolf") && is_at("jungle_ee") ) {
+    :print "<The wolf gazes off into the jungle then back, as if asking you to follow.<13>>";
       //:destroy "wolf";
       //:create "wolf" target="jungle_ee";
    }
    
+  // wolf
 
-   // :print {( " " + weight_items_carried() )} ;
+  :if (is_at "cliffs_e") {
+    :if (is_wolf_awake && ! has_seen_wolf) {
+      :print "You hear a loud noise to the south.";
+      :destroy "wolf_statue3";
+      :create "wolf_statue4" target="cliffs_e_clearing";
+      :create "wolf" target="cliffs_e_clearing";
+      :press_any_key;
+    }
+  }
 
    : set_string var = "lost_jungle_desc"  text = "Wind whistles thru the branches." ;
 
@@ -1584,22 +1593,7 @@ on_tick {
       }
    }
 
-   // THE WOLF
-
-   // remove wolf from all prior rooms and put
-   // it back in the grove
-   //:if (!is_present("wolf")) {
-//     :create "wolf" target="quiet_grove";
-  // }
-   :if (is_present("wolf")) {
-      :set_true "has_seen_wolf";
-   }
-
-
-   //:if (is_at("jungle_zone") && !is_present("wolf") && chance(10)) {
-   //   :print "<A wolf appears from deeper in the jungle. It sits nearby, watching.<13>>";
-   //   :create "wolf";
-   //}
+  // NPC behavior (handled in on tick)
 
    :if (is_at("quiet_grove")) {
       :match "look flowers" {
@@ -1610,13 +1604,18 @@ on_tick {
    }
 
    // TUTORIAL
+  :if (tutorial_on) {
 
-
-   :if (tutorial_on) {
-
-      :if (tutorial_progress==5) {
-         :tutorial "You'll notice that most commands are entered as <VERB NOUN<8>> pairs - like \"drop book\" or \"swim river\", but not all.\nTry <north<6>> or just <n<6>> to move north.";
+    // tiny help here and there
+    :if (is_present("coconut_trees")) {
+      :match "look trees" {
+          :tutorial "Perhaps you could <shake<6>> the trees? IE: <shake trees<6>>";
       }
+    }
+
+    :if (tutorial_progress==5) {
+      :tutorial "You'll notice that most commands are entered as <VERB NOUN<8>> pairs - like \"drop book\" or \"swim river\", but not all.\nTry <north<6>> or just <n<6>> to move north.";
+    }
 
 
 
@@ -1751,17 +1750,7 @@ on_tick {
 
 
 
-   // wolf
-
-   :if (is_at "cliffs_e") {
-      :if (is_wolf_awake && ! has_seen_wolf) {
-         :print "You hear a loud noise to the south.";
-         :destroy "wolf_statue3";
-         :create "wolf_statue4" target="cliffs_e_clearing";
-         :create "wolf" target="cliffs_e_clearing";
-         :press_any_key;
-      }
-   }
+ 
 
    // dream & intro
 
@@ -1820,31 +1809,8 @@ on_tick {
       }
    }
 
-   :add var="total_inputs" value="2";
-
-    // status effects
-
-   :set_string var="status" text="";
-   :set_false "has_status";
-
-   //:set_integer var = "thirst" value = "0";
-
-   : if (thirst > 50) {
-     :set_true "has_status";
-     :set_string var="status"  {(
-       status + "<thirsty<2>>"
-     )}
-   }
-   : if (hunger > 50) {
-      :if (has_status) {
-      :set_string var="status"  {( status + " " )}
-      }
-     :set_true "has_status";
-     :set_string var="status"  {(
-       status + "<hungry<2>>"
-     )}
-   }
-   //:set_false "has_status";
+  :gosub "track_inputs";
+  :gosub "update_status_effects";
 
    :match "wiz end" {
       :gosub "cutsceen_grove_destroy";
@@ -1888,7 +1854,7 @@ subroutines {
    :print "Was this somehow all part of a grand master plan?";
    :print "Were you an ally of the grove or an unwitting pawn of the wizard...";
    :press_any_key;
-   :print "...both?
+   :print "...both?";
    :print "...neither?";
 
    :set_true "award_acorn";
@@ -1990,14 +1956,46 @@ subroutines {
       }
   }
 
-  bootup : subroutine {
-   //  :print "bootup running";
+  title_screen: subroutine {
+    :print "<Lost Island<14>>";
+    :print "by Josh Goebel";
+    :print "© 2022";
+    :press_any_key;
+  }
+
+  bootup: subroutine {
     :create "your_earing" target="inventory";
     :create "your_pants" target="inventory";
     :wear "your_earing";
     :wear "your_pants";
   }
-  wearing : subroutine {
+
+  update_status_effects: subroutine {
+    :set_string var="status" text="";
+    :set_false "has_status";
+
+    :if (thirst > 50) {
+      :set_true "has_status";
+      :set_string var="status"  {(
+        status + "<thirsty<2>>"
+      )}
+    }
+    :if (hunger > 50) {
+      :if (has_status) {
+        :set_string var="status"  {( status + " " )}
+      }
+      :set_true "has_status";
+      :set_string var="status"  {(
+        status + "<hungry<2>>"
+      )}
+    }
+  }
+
+  track_inputs: subroutine {
+    :add var="total_inputs" value="2";
+  }
+
+  wearing: subroutine {
       // : append "You\'re holding:\s" ;
       // : look_inside of="inventory" extract_the="description" store_results_in="tmp_list" show_worn="false";
       // : print_list_verbose  "tmp_list" lead_in="" /;
