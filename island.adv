@@ -23,42 +23,42 @@
 
 on_startup {
 
-   // : beep millis = "100"  pitch = "0" ;
-   // : beep millis = "100"  pitch = "2" ;
-   // : beep millis = "100"  pitch = "4" ;
-   // : beep millis = "100"  pitch = "6" ;
+  // : beep millis = "100"  pitch = "0" ;
+  // : beep millis = "100"  pitch = "2" ;
+  // : beep millis = "100"  pitch = "4" ;
+  // : beep millis = "100"  pitch = "6" ;
 
-   :set_false "tutorial_on";
+  :set_theme "main_theme";
+  :set_false "tutorial_on";
 
-   :gosub "title_screen";
-   :gosub "ask_tutorial";
-   :gosub "bootup";
+  :gosub "title_screen";
+  :gosub "ask_tutorial";
+  :gosub "bootup";
 
-   //:goto "western_heights";
-   //:pocket "spyglass";
-   //:goto "shipwreck";
+  //:goto "western_heights";
+  //:pocket "spyglass";
+  //:goto "shipwreck";
 
-   //:goto "cliffs_e_clearing";
-   //:goto "quiet_grove";
-   //:pocket "candle";
-   //:pocket "matchbook";
+  //:goto "cliffs_e_clearing";
+  //:goto "quiet_grove";
+  :goto "beach_ww";
+  :pocket "candle";
+  :pocket "matchbook";
 
-   //:pocket "red_marble";
-   //:pocket "blue_marble";
+  :gosub "dream_of_storm";
 
-   //:create "wolf";
-   :goto "beach";
+  //:pocket "red_marble";
+  //:pocket "blue_marble";
+
+  //:create "wolf";
+  //:goto "beach";
 
 
-   // : beep millis = "100"  pitch = "6" ;
-   // : beep millis = "100"  pitch = "4" ;
-   // : beep millis = "100"  pitch = "2" ;
-   // : beep millis = "100"  pitch = "0" ;
+  // : beep millis = "100"  pitch = "6" ;
+  // : beep millis = "100"  pitch = "4" ;
+  // : beep millis = "100"  pitch = "2" ;
+  // : beep millis = "100"  pitch = "0" ;
 }
-
-
-
-// - [ ]
 
 start_at = washedashore
 template = talp
@@ -72,20 +72,22 @@ game_settings {
 }
 
 strings {
-   status : string "" ;
-   blank : string "";
-   prompt : string "[]: ";
-   flower_color: string "yellow";
-   lost_jungle_desc: string "";
-   //treasure_score: string "{until_wave}";
-   header_text : dynamic_string { ( "<" + h() + "<5>>")} ;
-   //status_prompt : dynamic_string { (has_status ? status : blank) }
-   status_prompt : dynamic_string {( "[]:" )}
+  tmp_string: string "";
+  status : string "" ;
+  blank : string "";
 
-   // changes after one sees the statue and gets the idea these might be eyes
-   reminds_of_eye : dynamic_string {( " with dark veins running thru it" )}
-   if_only_had_spyglass : dynamic_string {( !is_carried("spyglass") ? " If only you had a spyglass." : ""  )}
-   jungle_room_description : dynamic_string {( "You're deep in the jungle.  Huge tropical trees surround you on all sides. It's easy to get lost here." )}
+  prompt : string "[]: ";
+  flower_color: string "yellow";
+  lost_jungle_desc: string "";
+  //treasure_score: string "{until_wave}";
+  header_text : dynamic_string { ( "<" + h() + "<5>>")} ;
+  //status_prompt : dynamic_string { (has_status ? status : blank) }
+  status_prompt : dynamic_string {( "[]:" )}
+
+  // changes after one sees the statue and gets the idea these might be eyes
+  reminds_of_eye : dynamic_string {( " with dark veins running thru it" )}
+  if_only_had_spyglass : dynamic_string {( !is_carried("spyglass") ? " If only you had a spyglass." : ""  )}
+  jungle_room_description : dynamic_string {( "You're deep in the jungle.  Huge tropical trees surround you on all sides. It's easy to get lost here." )}
 }
 
 ######################################
@@ -128,6 +130,10 @@ booleans {
   award_acorn: boolean "false";
   award_signal_fire: boolean "false";
   award_whoami: boolean "false";
+  award_treasure_island: boolean "false";
+  award_find_dragon: boolean "false";
+  award_tarzan: boolean "false";
+  award_planet_of_apes: boolean "false";
 
   // cutscenes
   cutsceen_grove_destroy_seen: boolean "false";
@@ -141,7 +147,7 @@ integers {
    inventory_limit : integer "15" ;
    max_achievements :integer "20";
 
-   until_wave: integer "21";
+   until_wave: integer "31";
    dream_counter : integer "0";
    thirst: integer "0";
    hunger: integer "0";
@@ -161,7 +167,14 @@ collections {
 
 themes {
 
-   my_theme : theme {
+  dream_theme : theme {
+    extends = main_theme
+    colors {
+      paper = "#333";
+    }
+  }
+
+   main_theme : theme {
 
       lister_exits {
          exit_list_capitalization = lower
@@ -267,18 +280,18 @@ assets {
 
 
 locations {
-  placeholder : location "dummy location for fake connections";
+  placeholder: location "dummy location for fake connections";
 
   // beach
-  beach : location "A beach of beautiful white sand extends along the shoreline.  Further back looks like jungle." header="Southern Shore";
-  beach_w : location "A beach of beautiful white sand." header="Southern Shore";
-  beach_ww : location "A beach of beautiful white sand. There is a rocky outcropping to the north." header="Southern Shore";
-  beach_e : location "A beach of beautiful white sand." header="Southern Shore";
-  beach_ee : location "A beach of beautiful white sand." header="Southern Shore";
-  beach_ww_rocky :location "A small crevice disappears downwards into the rock." header="Rocky Outcropping";
-  beach_ww_cave :location "You are standing in a small cave, it's hard to see." header ="Small Cave";
+  beach: location "A beach of beautiful white sand extends along the shoreline.  Further back looks like jungle." header="Southern Shore";
+  beach_w: location "A beach of beautiful white sand." header="Southern Shore";
+  beach_ww: location "A beach of beautiful white sand. There is a rocky outcropping to the north." header="Southern Shore";
+  beach_e: location "A beach of beautiful white sand." header="Southern Shore";
+  beach_ee: location "A beach of beautiful white sand." header="Southern Shore";
+  beach_ww_rocky: location "A small crevice disappears downwards into the rock." header="Rocky Outcropping";
+  beach_ww_cave: location "You are standing in a small cave, it's hard to see." header ="Small Cave";
   
-  waters_edge :  location "You washed ashore here. Further south out to sea a half sunken shipwreck rises from the waves." header="Water's Edge" {
+  waters_edge : location "You washed ashore here. Further south out to sea a half sunken shipwreck rises from the waves." header="Water's Edge" {
     on_command {
         :match "look sky; look up" {
           :print "Nice day. Partly cloudy.";
@@ -287,14 +300,19 @@ locations {
         :match "look ship; look shipwreck; look wreck; look south" {
           :print "A black skull and crossbones flutters in the wind. You wonder if you could swim that far.";
         };
-        :match "south _" { 
-          //:if (!is_worn("medallion")) {
-              :print "How? You can't exactly walk to the ship."; 
-          //}
+        :match "south -" { 
+          :if (!is_worn("medallion")) {
+            :print "How? You can't exactly walk to the ship."; 
+          } :else {
+            :print "You swim out to the ship.";
+            :press_any_key;
+          }
         };
         :match "swim _" {
           :if (is_worn("medallion")) {
               :set_true "knows_to_swim";
+              :print "You swim out to the ship.";
+              :press_any_key;
               :goto "shipwreck";
           }
           :else {
@@ -304,7 +322,7 @@ locations {
     }
   };
 
-  washedashore   : location "You wake up with a mouth full of sand; your body half in, half out of the cold sea.  You have never been happier to be alive." header="The Cold Sand" {
+  washedashore  : location "You wake up with a mouth full of sand; your body half in, half out of the cold sea.  You have never been happier to be alive." header="The Cold Sand" {
 
     on_command {
         :match "n _; stand _" {
@@ -346,7 +364,7 @@ locations {
   village_hut: location "Larger than the rest, this hut seems quite homey. Dust covers everything." header="Village, Elder's Hut";
 
   // jungle
-  jungle_edge : location "A small footpath leads north into the jungle.  To the south is the beach." header="Jungle's Edge";
+  jungle_edge: location "A small footpath leads north into the jungle.  To the south is the beach." header="Jungle's Edge";
   jungle_entrance: location "{jungle_room_description}" header="Jungle";
   jungle_w: location "{jungle_room_description}" header ="Jungle (w)";
   jungle_ww: location "{jungle_room_description}" header ="Jungle (ww)" {
@@ -369,7 +387,7 @@ locations {
   western_heights_dream_e: location; // dummy exit to the east
   western_heights_dream: location "A full moon hangs high above.  The wind whips at you, threatening to cast you off the cliff and into the sea." header="Western Heights" {
     on_command {
-        :match "listen spell; listen incantation" {
+        :match "listen spell; listen incantation; listen words" {
           :print "You can't make out the words.";
         }
         :match "east _" {
@@ -377,7 +395,7 @@ locations {
           :print "Yet somehow you are certain you could leave at anytime, merely by closing your eyes.";
         }
         :match "close eyes; shut eyes; blink eyes" {
-          :print "You close your eyes... slowly the cold wind and rain receed until there is nothing but silence...";
+          :print "You close your eyes... slowly the cold wind and rain receed until there is only silence...";
           :press_any_key;
           :goto "western_heights";
         }
@@ -419,23 +437,34 @@ locations {
         :match "look down" {
           :print "It looks to be a sheer cliff dropping hundreds of feet to large rocks and angry ocean below.";
         }
-        :match "spy down" {
-          :print "Huge boulders and angry ocean so close you can almost taste it.";
-        }
-        :match "look south; spy south" {
+        :match "look south" {
           :print "A white, sandy beach lays to the south.  Further out to sea a half sunken ship sits in the waves.";
         }
         :match "look north" {
           :print "The northern part of the island appears to be dense jungle. You can barely make out movement.";
         }
-        :match "spy north" {
-          :print "Dense jungle.  You see a large ape swinging among the trees.";
+        :if (is_carried("spyglass")) {
+          :match "spy north" {
+            :print "Dense jungle.  You see a large ape swinging among the trees.";
+            :print "<Achievement<2>>: Planet of the Apes";
+            :set_true "award_planet_of_apes";
+            :success;          
+          }
+          :match "spy shipwreck" {
+            :print "A half-sunken pirate ship.";
+          }
+          :match "spy down" {
+            :print "Huge boulders and angry ocean so close you can almost taste it.";
+          }
+          :match "spy _" {
+            :print "You spy nothing out of the ordinary.";
+          }
         }
-        :match "look west; spy west" {
+        :match "look west" {
           :print "Ocean as far as the eye can see.";
         }
-        :match "look east; spy east" {
-          :print "The elevation slowly slopes back down slowly to gentle, rolling hills.";
+        :match "look east" {
+          :print "The heights slowly slope back down slowly to gentle, rolling hills.";
         }
     }
   }
@@ -447,6 +476,9 @@ locations {
         }
         :match "swing vines; swing wine" {
           :print "Are you Tarzan now? Perhaps you might climb them though.";
+          :print "<Achievement<2>>: Tarzan";
+          :set_true "award_tarzan";
+          :success;
         }
         :match "go vines; climb vines; go vine; climb vines" {
           :goto "cliffs_e_vine_top";
@@ -458,7 +490,25 @@ locations {
   cliffs_e_vine_b: location "You cling to the vine, it's still a long way down. A dark crevace seems to lead directly into the cliff." header="Eastern Cliffside";
 
   cliffs_e_cave_entrance: location "The passage narrows then heads downwards into the rock. Behind you are the vines." header="Eastern Cave";
-  cliffs_e_cave_rear: location "" header="Eastern Cave";
+  cliffs_e_cave_rear: location "The room is filled with treasure.  Too many chests to count, each one bursting with gold, gems, and precious metals." header="Eastern Cave" {
+    on_command {
+      :match "look dragon; find dragon" {
+        :print "You search, but it seems there truly is no dragon standing guard.";
+        :if (!award_find_dragon) {
+          :print "<Achievement<2>>: Paranoid Much?";
+          :set_true "award_find_dragon";
+          :success;
+        }
+      }
+    }
+    on_tick {
+        :if (!award_treasure_island) {
+          :print "<Achievement<2>>: Treasure Island";
+          :set_true "award_treasure_island";
+          :success;
+        }
+    }
+  };
   
   cliffs_e_clearing: location "You stand in a large clearing, bordered by dense jungle to the west. A huge boulder clings resolutely to the edge of the cliff." header="Eastern Cliffs,  Clearing" {
     on_command {
@@ -484,53 +534,90 @@ locations {
   burnt_grove: location "You stand in a burnt grove filled with only ashes and smoke." header ="Burnt Grove";
 
   dream_ship: location "You stand resolute at the helm as a wave unlike any you've ever seen rushes towards you. Your old grand-daddy used to tell tales of waves like this - <ship killers<15>> he called them." header="The Storm" {
+    on_tick {
+      :match "look stranger" {
+        :print "<You've been meaning to speak to them, but never found the time.<13>>";
+      }
+    }
     on_command {
-        : match "pray _" {
+        :match "pray _" {
           :print "\"Dear lord...\" You whisper your fearful request to a higher power and hope someone is listening. ";
           :set_true "award_god_fearing";
           :success;
           :print "<Achievement<2>>: God-fearing.";
-        };
-        : match "n -; s -; u -" {
+        }
+        // prevent us from dropping things in the dream
+        :match "drop _" {
+          :print "You can't really drop anything in this place...";
+        }
+        :match "north -; south -; up -; east -; west -" {
           :print "You dare not leave your post.";
-        };
-        : match "d -" {
-          :print "Retreating below deck sounds great, but you dare not leave your post.";
-        };
-        : match "u -" {
+        }
+        :match "up -" {
           :print "But why in the heck would you want to be up in the air in a storm like this?";
-        };
+        }
+        :match "down -" {
+          :print "Retreating below deck sounds great, but you dare not leave your post.";
+        }
         :match "mutiny -;kill captain" {
           :print "You reach for your knife... but have second thoughts.  Is mutiny truly the answer here?";
-        };
+        }
         :match "walk plank; jump overboard; jump water; abandon ship; swim _" {
           :print "Surely things aren't that bad yet?";
-        };
+        }
         :match "look wave" {
           :print "It must be at least as tall as 4 of your ships stacked mast to mast. A huge wall of angry water.";
-        };
+        }
         :match "give speech" {
-          :print "\"It's been a true honor, my friends\".\nYou were never one for long speeches.";
-        };
+          :print "You clear your throat.";
+          :press_any_key;
+          :print "\"It's been an honor...";
+          :pause millis = "1000" ;
+          :print "...my friends\"";
+          :pause millis = "1000" ;
+          :print "You were never one for long speeches.";
+        }
+        :match "talk stranger; speak stranger" {
+          :print "Too far away (without yelling).  They stand at the railing, staring out into the night, seemingly unphased by the storm.";
+        }
+        :match "yell stranger; scream stranger" {
+          :print "You yell, casting your voice towards the stranger.";
+          :press_any_key;
+          :print "Slowly they turn and you see those eyes...";
+          :pause millis = "1000";
+          :print "...like staring into a deep, black abyss with no bottom.";
+          :press_any_key;
+          :print "<Lightning flashes.<14>>";
+          :print "...and when you look back the stranger is gone.";
+          :destroy "d_stranger";
+          :press_any_key;
+          :print "Your momma always told ya get a grip on that overactive imagination of yours.";
+          :press_any_key;
+        }
         :match "talk firstmate; speak firstmate; look firstmate" {
           :print "\"Ain't never me seen a storm like this, oh the stories we'll tell!\" says the first mate with a silly grin.";
-        };
+        }
         :match "talk captain; speak captain; look captain" {
           :print "\"Don't worry kid, we'll be fine,\" he boasts.";
           :press_any_key ;
           :print "Yet you see the fear in his eyes.";
-        };
+        }
         :match "turn wheel;spin wheel;steer ship;turn ship" {
           :print "You spin the wheel trying to alter course, but deep inside you know it won't matter.";
-        };
+        }
+        :match "close eyes; wake _" {
+          :print "You close your eyes and try to will yourself awake.";
+          :press_any_key;
+          :gosub "dream_of_storm_end";
+        }
     }
   };
   dream_ship_placeholder: location ""; // fake room for dream ship connections
 
   // shipwreck rooms
-  shipwreck :location "The ship is half sunken, but the skull and crossbones still flies high. To the north is the beach." header="Shipwreck";
-  ship_crowsnest :location "The skull and crossbones still flies proudly in the wind." header="Crows Nest";
-  ship_captains :location "Half the room is submerged beneath dark water." header="Captains Quarters" {
+  shipwreck: location "The ship is half sunken, but the skull and crossbones still flies high. To the north is the beach." header="Shipwreck";
+  ship_crowsnest: location "The skull and crossbones still flies proudly in the wind." header="Crows Nest";
+  ship_captains: location "Half the room is submerged beneath dark water." header="Captains Quarters" {
     on_command {
         :match "look water" {
           :print "You wonder what could be hiding beneath the surface.";
@@ -590,10 +677,11 @@ objects {
   // dream ship
   d_captain: scenery "<captain<#c6c>>" at="dream_ship";
   d_firstmate: scenery "<firstmate<#c6c>>"  at="dream_ship";
+  d_stranger: scenery "<stranger<#c6c>>" at="dream_ship" msg="A subject of debate among the crew.  The stranger boarded at the last moment and has kept to themselves.  An old, gnarled walking stick never leaves their side.";
   d_wheel: scenery "ship's wheel" at="dream_ship" msg="Hand crafted with the finest Darkwood from the Isle of blah blah... honestly you weren't paying that much attention when the Captain blathered on and on about it during the tour.";
   d_plank: scenery "plank" at="dream_ship" msg="You've seen plenty walk it.";
-  d_mast: scenery "mast" at="dream_ship" msg="It extends upwards into the dark night. You know someone is manning the crow's nest, but you don't envy them.";
-
+  d_mast: scenery "mast" at="dream_ship" msg="It extends upwards into the dark night. You know someone is manning the crow's nest, but don't envy them.";
+  
   medallion :object "a silver medallion" msg="It's attached to leather cordage and seems cold to the touch." get_message = "You suddenly feel luckier." wearable="true" at ="cliffside_east";
 
   // wolf eyes
@@ -635,6 +723,14 @@ objects {
   chopped_oak : object "chopped oak";
   chopped_darkwood : object "chopped darkwood";
   signal_fire: scenery "signal fire" msg="A huge blaze, it should be possible to see the smoke for miles.";
+
+  // treasure
+  
+  treasure_treasure: scenery "treasure" at="cliffs_e_cave_rear" msg="So much treasure, you half expect to find a dragon lurking around the corner."; 
+  treasure_chests: scenery "chests" at="cliffs_e_cave_rear" conspicuous="false" msg="There are far too many to count.";
+  treasure_crown: object "crown" at="cliffs_e_cave_rear" msg="Fit for a king, or at least a duke." wearable="true";
+  treasure_gems: scenery "gems" at="cliffs_e_cave_rear" conspicuous="false" msg="So many gems...";
+  treasure_metals: scenery "metals" at="cliffs_e_cave_rear" conspicuous="false" msg="Gold, silver, moonstone...";
 
   // jungle
   wolf_statue: scenery  "statue" at="cliffs_e_clearing" 
@@ -1250,6 +1346,7 @@ on_command {
       :create "love_letters";
       :create "gold_coins";
       :create "matchbook";
+      :create "blue_marble";
       :swap o1="chest" o2="open_chest";
     }
     :match "hit chest; whack chest; break chest; smash chest" {
@@ -1257,13 +1354,13 @@ on_command {
         :cycle key = "hit_chest" predictable_order = "true" skip_interval = "0" max_loops="1"  {
           :print "You give it a good hard whack with the oar.\nNothing. But perhaps you didn't swing hard enough?";
           :print "You swing harder.\nThat's it, it looks like perhaps it's giving.";
-          :print "Third time's the charm.\nThe oar cracks in two.";
+          :print "Third time's the charm?\nNope.";
+          :print "The oar cracks in two.";
         }
         :increment "oar_hit_chest_count";
 
-        :if (oar_hit_chest_count > 2) {
-          :destroy "oar";
-          :create "broken_oar";
+        :if (oar_hit_chest_count > 3) {
+          :swap o1="oar" o2="broken_oar";
           :redescribe;
         }
       } :else {
@@ -1417,6 +1514,10 @@ on_command {
     :match "drink water; drink pool" {
       :set_integer var = "thirst" value = "0" ;
       :print "You didn't know water could taste this good.";
+      :print "Refreshed, you close your eyes for just a brief moment...";
+      :press_any_key;
+      :print "And soon you're fast asleep...";
+      :gosub "dream_of_storm";
     }
   }
 
@@ -1517,7 +1618,7 @@ on_command {
   :match "lol -" {
     :print "You laugh at loud, then wonder if you are starting to lose your mind.";
   }
-  :match "touch yourselfl; touch myself" {
+  :match "touch yourself; touch myself" {
     :print "Perhaps later?";
     :done;
   }
@@ -1573,7 +1674,7 @@ on_command {
 on_tick {
   // DEBUG
   :if (is_debug) {
-    :print {( "linger" + linger() )};
+    //:print {( "linger" + linger() )};
   }
 
   // more prominence to wearing
@@ -1800,29 +1901,35 @@ on_tick {
    :if (dream_intro) {
       : increment "dream_counter" ;
       : decrement "until_wave" ;
-
       : if (is_at "dream_ship" && dream_counter > 2) {
          // :print_graphic "storm";
+         :set_string var="tmp_string" text="";
          :cycle key = "wave" predictable_order = "false" skip_interval = "0" max_loops="1"  {
-               :print "You feel ill." ;
-               :print "You think you hear the terrifying roar of a leviathan." ;
-               :print "The frigid wind whips through your hair." ;
-               :print "In the distance you hear crashing waves." ;
-               :print "The ship violently rocks to and fro.";
-               :print "If there was ever a time for prayer...";
-               :print "The ship lurches from side to side, almost as if possessed.";
-               :print "The ship groans and strains, trying to avoid being torn apart.";
-               :print "You are afraid.";
-               :print "You fear you may never see your beloved Brandy again.";
-               :print "You hear a fellow crewmate cry out in the night.";
-               :print "You really wish you'd used the bathroom earlier when you had the chance.";
-               :print "You imagine the ship being torn apart.";
+               :set_string var="tmp_string" text="You feel ill." ;
+               :set_string var="tmp_string" text="You imagine you hear the terrifying roar of a leviathan." ;
+               :set_string var="tmp_string" text="The frigid wind whips through your hair." ;
+               :set_string var="tmp_string" text="In the distance you hear crashing waves." ;
+               :set_string var="tmp_string" text="The ship violently rocks to and fro.";
+               :set_string var="tmp_string" text="If there was ever a time for prayer...";
+               :set_string var="tmp_string" text="The ship lurches from side to side, almost as if possessed.";
+               :set_string var="tmp_string" text="The ship groans and strains, trying to avoid being torn apart.";
+               :set_string var="tmp_string" text="You are afraid.";
+               :set_string var="tmp_string" text="You fear you may never see your beloved Lucy again.";
+               :set_string var="tmp_string" text="You hear a fellow crewmate cry out in the night.";
+               :set_string var="tmp_string" text="You really wish you'd used the restroom earlier.";
+               :set_string var="tmp_string" text="You imagine the ship being torn apart.";
             }
       }
 
-      : pause "250";
-      :print "...^n^ {until_wave} ...";
-      : pause "250";
+      // :pause "250";
+      :beep millis="150" pitch="-15";
+      :beep millis="125" pitch="-19";
+      :beep millis="100" pitch="-28";
+      :if (tmp_string == "") {
+        :print "^c^... {until_wave} ...";
+      } :else {
+        :print "^c^... {until_wave} ...\n^c^{tmp_string}";
+      }
 
       :if (until_wave == 0) {
          : set_integer var = "until_wave"  value = "255" ;
@@ -1862,8 +1969,24 @@ on_tick {
 subroutines {
   goals : subroutine {
    :print "GOALS";
-
   }
+
+  dream_of_storm: subroutine {
+    :set_true "dream_intro";
+    :set_integer var="dream_counter" value="-1";
+    :set_integer var="until_wave" value="31";
+    :set_theme "dream_theme";
+    :goto "dream_ship";
+  }
+
+  dream_of_storm_end: subroutine {
+    :set_false "dream_intro";
+    :set_integer var="dream_counter" value="-1";
+    :set_integer var="until_wave" value="31";
+    :set_theme "main_theme";
+    :goto "beach_ww_rocky";
+  }
+
   stats : subroutine {
    :print "STATS";
    :print {( "- turns " + turns()  )};
@@ -1943,6 +2066,10 @@ subroutines {
    // light the signal fire
    :append "{ award_signal_fire ? ` Smoke Signal. ` }";
    :append "{ award_whoami ? ` Know Thyself. ` }";
+   :append "{ award_treasure_island ? ` Treasure Island. ` }";
+   :append "{ award_find_dragon ? ` Paranoid Much? ` }";
+   :append "{ award_tarzan ? ` Tarzan. ` }";
+   :append "{ award_planet_of_apes ? ` Planet of the Apes. ` }";
 
    :print "\n^c^---";
   }
