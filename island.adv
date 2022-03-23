@@ -41,15 +41,16 @@ on_startup {
 
   //:goto "cliffs_e_clearing";
   //:goto "quiet_grove";
-  :goto "beach_ww";
-  :pocket "candle";
-  :pocket "matchbook";
+  //:goto "beach_ww";
+  //:pocket "candle";
+  //:pocket "matchbook";
 
   //:gosub "dream_of_storm";
-  :goto "quiet_grove";
+  //:goto "quiet_grove";
 
-  //:pocket "red_marble";
-  //:pocket "blue_marble";
+  :goto "cliffs_e_clearing";
+  :pocket "red_marble";
+  :pocket "blue_marble";
 
   //:create "wolf";
   //:goto "beach";
@@ -111,6 +112,7 @@ booleans {
   has_seen_cliff_steps: boolean "false";
   has_seen_wolf: boolean "false";
   has_visited_grove: boolean "false";
+  has_dreamed_of_storm: boolean "false";
   dream_intro : boolean "false";
   
   knows_to_swim: boolean "false";
@@ -135,6 +137,7 @@ booleans {
   award_find_dragon: boolean "false";
   award_tarzan: boolean "false";
   award_planet_of_apes: boolean "false";
+  award_bad_boys: boolean "false";
 
   // cutscenes
   cutsceen_grove_destroy_seen: boolean "false";
@@ -544,7 +547,7 @@ locations {
     }
   }
 
-  dream_ship: location "You stand resolute at the helm as a wave unlike any you've ever seen rushes towards you. Your old grand-daddy used to tell tales of waves like this - <ship killers<15>> he called them." header="The Storm" {
+  dream_ship: location "You stand resolute at the helm as a wave unlike any you've ever seen rushes towards you. Your old grand-daddy told tales of waves like this - <ship killers<15>> he called them." header="The Storm" {
     on_tick {
       :match "look stranger" {
         :print "<You've been meaning to speak to them, but never found the time.<13>>";
@@ -572,12 +575,18 @@ locations {
         }
         :match "mutiny -;kill captain" {
           :print "You reach for your knife... but have second thoughts.  Is mutiny truly the answer here?";
+          :set_true "award_bad_boys";
+          :success;
+          :print "<Achievement<2>>: Bad boys, bad boys, what ya gonna do.";
         }
-        :match "walk plank; jump overboard; jump water; abandon ship; swim _" {
+        :match "abandon ship" {
+          :print "No, duty compells you to stay.  That's the Captain's call, not yours.";
+        }
+        :match "walk plank; jump overboard; jump water; swim _" {
           :print "Surely things aren't that bad yet?";
         }
         :match "look wave" {
-          :print "It must be at least as tall as 4 of your ships stacked mast to mast. A huge wall of angry water.";
+          :print "It must be at least as tall as 4 of your own vessel stacked mast to mast. A huge wall of angry water.";
         }
         :match "give speech" {
           :print "You clear your throat.";
@@ -589,16 +598,17 @@ locations {
           :print "You were never one for long speeches.";
         }
         :match "talk stranger; speak stranger" {
-          :print "Too far away (without yelling).  They stand at the railing, staring out into the night, seemingly unphased by the storm.";
+          :print "(too far away without yelling)";
+          :print "They stand at the railing, staring into the ocean, seemingly unbothered by the violence of the storm.";
         }
         :match "yell stranger; scream stranger" {
           :print "You yell, casting your voice towards the stranger.";
           :press_any_key;
-          :print "Slowly they turn and you see those eyes...";
+          :print "Slowly they turn and you see eyes... eyes...";
           :pause millis = "1000";
-          :print "...like staring into a deep, black abyss with no bottom.";
+          :print "...like staring into a deep, dark abyss with no bottom.";
           :press_any_key;
-          :print "<Lightning flashes.<14>>";
+          :print "<A spider web of lightning flashes across the sky.<14>>";
           :print "...and when you look back the stranger is gone.";
           :destroy "d_stranger";
           :press_any_key;
@@ -610,7 +620,7 @@ locations {
         }
         :match "talk captain; speak captain; look captain" {
           :print "\"Don't worry kid, we'll be fine,\" he boasts.";
-          :press_any_key ;
+          :press_any_key;
           :print "Yet you see the fear in his eyes.";
         }
         :match "turn wheel;spin wheel;steer ship;turn ship" {
@@ -618,8 +628,9 @@ locations {
         }
         :match "close eyes; wake _" {
           :print "You close your eyes and try to will yourself awake.";
-          :press_any_key;
-          :gosub "dream_of_storm_end";
+          :set_integer var="until_wave" value="0";          
+          //:press_any_key;
+          //:gosub "dream_of_storm_end";
         }
     }
   };
@@ -688,7 +699,7 @@ objects {
   // dream ship
   d_captain: scenery "<captain<#c6c>>" at="dream_ship";
   d_firstmate: scenery "<firstmate<#c6c>>"  at="dream_ship";
-  d_stranger: scenery "<stranger<#c6c>>" at="dream_ship" msg="A subject of debate among the crew.  The stranger boarded at the last moment and has kept to themselves.  An old, gnarled walking stick never leaves their side.";
+  d_stranger: scenery "<stranger<#c6c>>" at="dream_ship" msg="A subject of debate among the crew.  They boarded at the last moment and have kept to themselves.  An old, gnarled walking stick never leaves their side.";
   d_wheel: scenery "ship's wheel" at="dream_ship" msg="Hand crafted with the finest Darkwood from the Isle of blah blah... honestly you weren't paying that much attention when the Captain blathered on and on about it during the tour.";
   d_plank: scenery "plank" at="dream_ship" msg="You've seen plenty walk it.";
   d_mast: scenery "mast" at="dream_ship" msg="It extends upwards into the dark night. You know someone is manning the crow's nest, but don't envy them.";
@@ -704,7 +715,7 @@ objects {
   your_earing: object "a gold earing" msg="A small silver teardrop earing" wearable="true";
 
   // beach
-  pool :scenery "pool" at="beach_ww_rocky" msg="A small pool of crystal clear water. Drinkable.";
+  pool :scenery "pool" at="beach_ww_rocky" msg="A small pool of crystal clear water. You see your reflection - not one of your better days.";
   knife: object "a knife" at = "waters_edge" msg="It appears quite sharp.";
   oar: object "an oar" at ="beach_w";
   broken_oar: object "a broken oar"  msg="Broken in half, useless.";
@@ -712,7 +723,7 @@ objects {
   coconut: object "a coconut" msg="A delicious coconut.";
   seagull: scenery "seagull" at = "beach" msg="What a beautiful, delicious bird.";
   dead_seagull: scenery "dead seagull" msg="What a beautiful, delicious bird.";
-  debris : scenery "random debris" at = "beach" msg="Random debris from the shipwreck. You see nothing useful at the moment.";
+  debris : scenery "random debris" at = "beach" msg="Assorted debris from the wreck. Nothing useful at the moment.";
   msg_bottle: object "a bottle" at = "beach_w" msg="A beautiful blue frosted glass bottle that looks as if it's been tossed on the waves for years.  There is a message inside.";
   seashell : object "a seashell" at = "waters_edge" msg="Reminds you of picking up seashells as a child.";
   stone: object "a stone" msg="one of the stones from the strange pile";
@@ -1129,9 +1140,9 @@ on_command {
          :examine "wolf";
          :print "<The wolf matches your stare until you look away.<13>>";
       }
-      :match "ask wolf" {
-         :print "What would you ask it?";
-      }
+      //:match "ask wolf" {
+      //   :print "What would you ask it?";
+      //}
       :match "talk wolf" {
          :print "You prepare your best friendly animal voice.";
          :print "\"Hey there wolfy boy. Lets be friends.\"";
@@ -1148,13 +1159,16 @@ on_command {
    :if (is_present("wolf_statue") || is_present("wolf_statue2")) {
       :match "look statue" {
          :examine;
-         :swap o1 = "wolf_statue" o2="wolf_statue2";
+         :if (is_present("wolf_statue")) {
+          :swap o1 = "wolf_statue" o2="wolf_statue2";
+        }
          // :create "wolf_statue2";
          //:done;
       }
       :match "insert stone; insert eyes; place eyes; place stones; place marbles; add eyes; add stone" {
          :if (is_present("red_marble") && is_present("blue_marble")) {
-            :print "The stone eyes lock into place - their color fading to a dull shade of gold. You suddenly feel as if you’re being watched.";
+            :print "The stone eyes lock into place - their color fading to a dull shade of gold.";
+            :print "<You suddenly feel as if you’re being watched.<13>>";
             :destroy "wolf_statue"; 
             :destroy "wolf_statue2"; 
             :create "wolf_statue3";
@@ -1286,6 +1300,8 @@ on_command {
          :if (is_carried("knife")) {
             :print "You cut into the coconut with your knife.\nDelicious.";
             :set_integer var ="hunger" value="0";
+            :destroy "coconut";
+            :done;
          } :else {
             :print "You need some way to open upthe coconut.";
          }
@@ -1302,7 +1318,7 @@ on_command {
 
    :match "get wood; get driftwood" {
       :if (is_present "driftwood") {
-         :print "It's too large to carry as it is.\nYou need to break it into smaller pieces first.";
+         :print "It's too large to carry as it is.\nYou'd first need to break it into smaller pieces.";
       }
    }
 
@@ -1388,26 +1404,26 @@ on_command {
 
   :match "follow wolf" {
     :print "<With one last look at you, the wolf plunges into the jungle.<13>>\n You rush after and are hopefully lost in only minutes.";
-    // :goto "quiet_grove";
-    // :create "wolf";
 
     :set_integer var = "lost_jungle_counter"  value = "0" ;
     :goto "lost_jungle";
   }
 
-   // lost in the jungle
+   // LOST IN JUNGLE
 
    :if (is_at("lost_jungle")) {
-      :match "n _; s _; e _; w _" {
-         // :print "You are still hopefully lost.";
-
+      :match "look wolf; follow wolf" {
+        :print "The wolf is just too fast, it knows the jungle.";
+        :print "You've lost it's trail.";
+      }
+      :match "north -; south -; east -; west -" {
          : increment "lost_jungle_counter" ;
          : cycle key = "lost_events" predictable_order = "true" skip_interval = "0"  {
             :print "You are so very lost." ;
             :print "Every tree looks the same." ;
             :print "Wait, that Y shaped tree looks familiar." ;
             :print "Nope, just your imagination." ;
-            :print "You are afraid." ;
+            :print "Fear starts to nibble at the corners of your mind." ;
          }
          :if (lost_jungle_counter>5) {
             :goto "quiet_grove";
@@ -1534,10 +1550,17 @@ on_command {
     :match "drink water; drink pool" {
       :set_integer var = "thirst" value = "0" ;
       :print "You didn't know water could taste this good.";
-      :print "Refreshed, you close your eyes for just a brief moment...";
-      :press_any_key;
-      :print "And soon you're fast asleep...";
-      :gosub "dream_of_storm";
+      :if (has_dreamed_of_storm) {
+        :add_choice "dream again" { :set_false "has_dreamed_of_storm"; }
+        :add_choice "no thanks, just the water" { :done; }
+        :choose "You recall your memories of the storm...";
+      }
+      :if (!has_dreamed_of_storm) {
+        :print "Refreshed, you close your eyes for just a brief moment...";
+        :press_any_key;
+        :print "And soon you're fast asleep...";
+        :gosub "dream_of_storm";
+      }
     }
   }
 
@@ -1578,7 +1601,9 @@ on_command {
       }
       :match "read bottle" {
          :print "It has no label. There is a message inside.";
-         :tutorial "Did you perhaps mean <read message<6>>?";
+         :if (tutorial_on) {
+          :tutorial "Did you perhaps mean <read message<6>>?";
+        }
       }
       :match "read message; read note" {
          :set_true "award_message_in_a_bottle";
@@ -1929,7 +1954,6 @@ on_tick {
 
    // dream & intro
 
-
    :if (dream_intro) {
       : increment "dream_counter" ;
       : decrement "until_wave" ;
@@ -1946,6 +1970,7 @@ on_tick {
                :set_string var="tmp_string" text="The ship lurches from side to side, almost as if possessed.";
                :set_string var="tmp_string" text="The ship groans and strains, trying to avoid being torn apart.";
                :set_string var="tmp_string" text="You are afraid.";
+               :set_string var="tmp_string" text="If there were ever a time for speeches, it's now.";
                :set_string var="tmp_string" text="You fear you may never see your beloved Lucy again.";
                :set_string var="tmp_string" text="You hear a fellow crewmate cry out in the night.";
                :set_string var="tmp_string" text="You really wish you'd used the restroom earlier.";
@@ -1963,7 +1988,7 @@ on_tick {
         :print "^c^... {until_wave} ...\n^c^{tmp_string}";
       }
 
-      :if (until_wave == 0) {
+      :if (until_wave <= 0) {
          : set_integer var = "until_wave"  value = "255" ;
          : set_false "dream_intro";
 
@@ -1977,7 +2002,8 @@ on_tick {
          : beep millis="200" pitch="-8";
          : beep millis="500" pitch="-15";
          : press_any_key ;
-         :goto "washedashore";
+         //:goto "washedashore";
+         :gosub "dream_of_storm_end";
          : redescribe;
          :done;
       };
@@ -2014,6 +2040,7 @@ subroutines {
 
   dream_of_storm_end: subroutine {
     :set_false "dream_intro";
+    :set_true "has_dreamed_of_storm";
     :set_integer var="dream_counter" value="-1";
     :set_integer var="until_wave" value="31";
     :set_theme "main_theme";
@@ -2093,7 +2120,7 @@ subroutines {
     :print "<The wizard laughs maniacly.<13>>";
     :press_any_key;
 
-    :print "\"A pet human?  How very foolish. ";  
+    :print "❝A pet human?  How very foolish. ";  
     //:pause millis = "3000" ;
     :print "There was once a time you did not make such mistakes.";
     //:pause millis = "3000" ;
@@ -2101,7 +2128,7 @@ subroutines {
     //:pause millis = "3000" ;
     :print "Millinnia I have slept, waited, and dreamt of this day.";
     //:pause millis = "3000" ;
-    :print "I had only to follow your pitiful pet.\"";
+    :print "I had only to follow your pitiful pet.❞";
     //:pause millis = "3000" ;
     :print "<The wizard raises his bloodwood staff.<13>>";
     :press_any_key;
@@ -2177,7 +2204,7 @@ subroutines {
   }
   
   ask_tutorial: subroutine {
-   :print "\n\n\n";
+   :print "\n\n";
    :tutorial "Hello, I'm your friendly tutorial. I'll help you learn how to play if you're new to text adventure games.";
    :tutorial "You can shut me up at any time with <TUTORIAL OFF<6>>, so if you're on the fence, perhaps let me try to help?";
    :ask_bool {
@@ -2189,7 +2216,7 @@ subroutines {
   }
 
   title_screen: subroutine {
-    :print "<Lost Island<14>>";
+    :print "<Forgotten Island<14>>";
     :print "by Josh Goebel";
     :print "© 2022";
     :press_any_key;
