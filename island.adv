@@ -45,7 +45,8 @@ on_startup {
   :pocket "candle";
   :pocket "matchbook";
 
-  :gosub "dream_of_storm";
+  //:gosub "dream_of_storm";
+  :goto "quiet_grove";
 
   //:pocket "red_marble";
   //:pocket "blue_marble";
@@ -139,6 +140,7 @@ booleans {
   cutsceen_grove_destroy_seen: boolean "false";
   cutsceen_plant_acorn_seen: boolean "false";
   cutsceen_signal_fire_seen: boolean "false";
+  cutsceen_wizard_staff_seen: boolean "false";
 }
 
 integers {
@@ -531,7 +533,16 @@ locations {
   lost_jungle_n: location "";
   lost_jungle: location "{lost_jungle_desc} You are lost." header = "Deep in the Jungle";
   quiet_grove: location "You stand in a quiet grove filled with flowers. A single massive tree stands at the center. " header ="Quiet Grove";
-  burnt_grove: location "You stand in a burnt grove filled with only ashes and smoke." header ="Burnt Grove";
+  burnt_grove: location "You stand in a burnt grove filled full of only ashes and smoke." header ="Burnt Grove" {
+    on_command {
+      :match "look staff" {
+        :if(is_present("broken_staff")) {
+          //:examine;
+          :gosub "cutsceen_wizard_staff";
+        }
+      }
+    }
+  }
 
   dream_ship: location "You stand resolute at the helm as a wave unlike any you've ever seen rushes towards you. Your old grand-daddy used to tell tales of waves like this - <ship killers<15>> he called them." header="The Storm" {
     on_tick {
@@ -671,7 +682,7 @@ objects {
   burnt_tree: scenery "dead tree" at="burnt_grove" msg="Dead. The life force you felt before is gone.";
   //dead_wolf: scenery "<dead wolf<#c6c>>" at="burnt_grove";
   //dead_wizard: scenery "<dead wizard<#c6c>>" at="burnt_grove";
-  broken_staff: object "a broken staff" at="burnt_grove" msg="You wizard's staff is broken in half and powerless.";
+  broken_staff: object "a broken staff" msg="You wizard's staff is broken in half and powerless.";
 
   // d_rope: object "a rope" at="dream_ship";
   // dream ship
@@ -1103,7 +1114,7 @@ on_command {
          }
          : add_choice "a hero promised" {
             :print "Yet all of this was long ago foretold... also that one day a hero would come - to right the old wrongs.";
-            :print "Seek the wolf... perhaps then the tree would offer guidance...";
+            :print "Seek the wolf... perhaps then the tree would offer help...";
          }
          : add_choice "nevermind" { 
             :redescribe;
@@ -1412,8 +1423,13 @@ on_command {
    :if (is_at("quiet_grove")) {
 
       :match "talk tree; speak tree" {
-         // :print "<...<14>>";
          :print "You have a feeling it's already listening.\nWhat would <ask<8>> of it?";
+      }
+      :match "touch tree" {
+        :print "You feel briefly feel connected to a life force impossible to describe or imagine.";
+        :print "It's too much, and you jerk your hand away.";
+        //:print "You might call it a religious experience, but that would not do the feeling justice.";
+        :done;
       }
       :match "ask tree" {
          :print "Ask it what?";
@@ -1427,51 +1443,55 @@ on_command {
             :print "A gentle breeze; the branches dance." ;
             :print "The leaves whisper softly.";
             :print "Branches click and rattle in the wind.";
-            // :print "You are afraid." ;
          }
       }
       :match "ask life" {
-         :print "<fourty two<14>>"; :done; }
+        :print "<fourty two<14>>"; :done; }
       :match "ask wisdom; ask patience; ask truth" {
-         :print "<good<14>>"; :done; }
+        :print "<much good.<14>>"; :done; }
       :match "ask fire; ask earth; ask wind; ask water" {
-         :print "<elemental<14>>"; :done; }
+        :print "<elemental. power.<14>>"; :done; }
       :match "ask love" {
-         :print "<magic. deep.<14>>"; :done; }
-      :match "ask acorn" { :print "<help. plant, you must.<14>>";  :done; }
+        :print "<magic. deep.<14>>"; :done; }
+      :match "ask acorn" { :print "<help. plant.<14>>";  :done; }
       :match "ask help" {
-         :print "<...<14>>";
-         :print "An acorn falls to the ground.";
-         :create "acorn";
-         :done; 
+        :print "<help.<14>>";
+        :print "A small acorn falls to the ground.";
+        :create "acorn";
+        :done; 
       }
       :match "ask flower; ask flowers" {
-         :print "<for others<14>>"; :done; }
+        :print "<for others<14>>"; :done; }
       :match "ask island" {
-         :print "<here<14>>"; :done; }
+        :print "<here<14>>"; :done; }
       :match "ask treasure; ask gold; ask money" {
-         :print "<greed. sad.<14>>"; :done; }
+        :print "<greed. sad.<14>>"; :done; }
       :match "ask wolf; ask dragon" {
-         :print "<old ones<14>>"; :done; }
-      :match "ask wizard" {
-         :print "<evil one<14>>"; :done; }
+        :print "<old ones<14>>"; :done; }
+      :match "ask wizard; ask stranger" {
+        :print "<evil one<14>>"; :done; }
       :match "ask people" {
-         :print "<wizard slaves<14>>"; :done; }
+        :print "<wizard slaves<14>>"; :done; }
       :match "ask ship; ask shipwreck" {
-         :print "<brings hero<14>>"; :done; }
+        :print "<bring hero<14>>"; :done; }
       :match "ask age" {
-         :print "<long. ago. time.<14>>"; :done; }
-      :match "ask name; ask self; ask god; ask why" {
-         :print "<... ...<14>>";
-         :done;
-      }
+        :print "<long. ago. time.<14>>"; :done; }
+      :match "ask name; ask who" {
+        :print "<many names.<14>>"; :done; }
       :match "ask _" {
-         :print "...";
+         :print "... silence ...";
       }
 
       :match "take flower; pick flower; get flower" {
          :print "<The wolf growls as you reach towards a flower.<13>>";
          :print "You reconsider.";
+      }
+
+      :match "south -" {
+        :if (is_carried("acorn")) {
+          :print "You imagine you see a dark figure out of the corner of your eye...";
+          :goto "jungle_ww";
+        }
       }
    }
 
@@ -1687,6 +1707,18 @@ on_tick {
   // booleans
   :if (is_present("wolf")) { :set_true "has_seen_wolf"; }
   :if (is_at("quiet_grove")) { :set_true "has_visited_grove"; }
+
+  // somethings wrong in the grove
+  :if (is_at("jungle_ww") && is_carried("acorn")) {
+    :if (!cutsceen_grove_destroy_seen) {
+      :destroy "wolf"; // wolf is nowhere
+      :print "<You hear yelling and a loud commotion in the grove to the north.<13>>";
+    }
+  }
+
+  :if (is_just_entered() && is_at("quiet_grove") && is_carried("acorn")) {
+    :gosub "cutsceen_grove_destroy";
+  }
 
   // ****************
   //  chase the wolf
@@ -1959,10 +1991,11 @@ on_tick {
       :gosub "cutsceen_grove_destroy";
    }
 
-   :match "look tree" {
+  :if (is_present("burnt_tree")) {
+    :match "look tree" {
       :gosub "cutsceen_plant_acorn";
-   }
-
+    }
+  }
 }
 
 
@@ -2005,49 +2038,87 @@ subroutines {
   }
 
   cutsceen_plant_acorn : subroutine {
-   :if (cutsceen_plant_acorn_seen) { :done; }
-   :set_true "cutsceen_plant_acorn_seen";
+    :if (cutsceen_plant_acorn_seen) { :done; }
+    :set_true "cutsceen_plant_acorn_seen";
 
-   :print "<You suddenly remember the acorn.<13>>";
-   :print "Kneeling down you dig a small hole and gently plant the acorn.";
-   :print "Was this somehow all part of a grand master plan?";
-   :print "Were you an ally of the grove or an unwitting pawn of the wizard...";
-   :press_any_key;
-   :print "...both?";
-   :print "...neither?";
+    :print "^c^---";
+    :print "<You suddenly remember the acorn.<13>>";
+    :press_any_key;
+    :print "Kneeling down you dig a small hole and gently plant the acorn.";
+    //:pause millis = "4000" ;
+    :print "Was this somehow all part of a grand master plan?";
+    //:pause millis = "4000" ;
+    :print "Were you an ally of the grove or an unwitting pawn of the wizard...";
+    //:pause millis = "4000" ;
+    :press_any_key;
+    :print "...both?";
+    //:pause millis = "1000" ;
+    :print "...neither?";
+    :print "You worry you may never know.";
+    //:pause millis = "1000" ;
 
-   :set_true "award_acorn";
-   :print "<Achievement<2>>: Kings or Pawns";
-   :success;
+    :set_true "award_acorn";
+    :print "<Achievement<2>>: Kings or Pawns";
+    :success;
+    :press_any_key;
+    :create "broken_staff";
+    :redescribe;
+    }
 
-   :press_any_key;
-   :print "Looking up you notice the wizard's bloodwood staff laying nearby, broken into 3 pieces.";
-   :print "<A thought leaps unbidden into your mind.<13>>";
-   :print "Imagine the good one might do with even but a fraction of the wizard's powers.";
-   :print "You whistle idly as you carefully collect the staff pieces.";
-   :print "A short time later you leave the grove feeling confident of rescue and a long life.";
+  cutsceen_wizard_staff : subroutine {
+    :if (cutsceen_wizard_staff_seen) { :done; }
+    :set_true "cutsceen_wizard_staff_seen";
+
+    :print "You notice the wizard's bloodwood staff laying nearby, broken in half.";
+    :print "<A thought enters unbidden into your mind.<13>>";
+    :press_any_key;
+    :print "<Might the staff be reassembled?<15>>";
+    :print "You imagine the good you could accomplish with such powers...";
+    //:pause millis = "4000" ;
+    :print "You whistle idly as you collect both halves of the staff.";
+    //:pause millis = "4000" ;
+    :print "You depart the burnt grove confident of rescue and oddly certain of long life.";
+    :press_any_key;
+    :print "...and an acorn slowly begins to grow...";
+    :press_any_key;
   }
 
   cutsceen_grove_destroy : subroutine {
-   :if (cutsceen_grove_destroy_seen) { :done; }
-   :set_true "cutsceen_grove_destroy_seen";
+    :if (cutsceen_grove_destroy_seen) { :done; }
+    :set_true "cutsceen_grove_destroy_seen";
 
-   :print "A dark robed figure stands before the ancient tree.";
-   :print "<The wizard laughs maniacly.<13>>";
+    :print "^c^---";
+    :print "A dark robed figure stands before the ancient tree.";
+    //:pause millis = "2000" ;
+    :print "<The wizard laughs maniacly.<13>>";
+    :press_any_key;
 
-   :print "\"So very foolish.  Millinnia have I slept, waited, and dreamed.  A human?  You make it all too easy.  The grove - so long hidden from my all-seeing eyes.  I had only to follow the human stink.\"";
-   :print "<The wizard raises his bloodwood staff.<13>>";
+    :print "\"A pet human?  How very foolish. ";  
+    //:pause millis = "3000" ;
+    :print "There was once a time you did not make such mistakes.";
+    //:pause millis = "3000" ;
+    :print "The grove, so long hidden from my sight.";
+    //:pause millis = "3000" ;
+    :print "Millinnia I have slept, waited, and dreamt of this day.";
+    //:pause millis = "3000" ;
+    :print "I had only to follow your pitiful pet.\"";
+    //:pause millis = "3000" ;
+    :print "<The wizard raises his bloodwood staff.<13>>";
+    :press_any_key;
 
-   :print "“What began long ago, today I conclude.”";
-   :print "<The wizard recites words of power.<13>>";
-   :print "Red fire rains down, engulfing the massive tree. The ground shakes and you are thrown backwards into the jungle.";
+    :print "“What began long ago.  Hodie est complevit!”";
+    :print "<The wizard recites words of power.<13>>";
+    :press_any_key;
+    :print "Blood red fire rains down, engulfing the massive tree. The ground shakes and you are thrown backwards into the jungle.";
 
-   :press_any_key;
-   :print "The ground shakes again and you hear a vicious growl as you lose consciousness.";
-   :press_any_key;
+    :press_any_key;
+    :print "The last thing you remember is a vicious growling, as if all the beasts of the earth spoke with a single voice...";
+    :print "...and then it all fades to black...";
+    //:print "The ground shakes again and you hear a vicious growl as you lose consciousness.";
+    :press_any_key;
 
-   :goto "jungle_ww";
-   :redescribe;
+    :goto "jungle_ww";
+    :redescribe;
   }
 
   achievements : subroutine {
