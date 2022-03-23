@@ -42,9 +42,16 @@ on_startup {
    //:pocket "spyglass";
    //:goto "shipwreck";
 
-   :goto "cliffs_e";
-   :pocket "candle";
-   :pocket "matchbook";
+   :goto "cliffs_e_clearing";
+   :goto "quiet_grove";
+   //:pocket "candle";
+   //:pocket "matchbook";
+
+   :pocket "red_marble";
+   :pocket "blue_marble";
+
+   :create "wolf";
+
 
    // : beep millis = "100"  pitch = "6" ;
    // : beep millis = "100"  pitch = "4" ;
@@ -101,6 +108,7 @@ booleans {
    has_seen_wolf: boolean "false";
    always: boolean "true";
    knows_to_swim: boolean "false";
+   has_visited_grove: boolean "false";
 
    tut_look_debris: boolean "false";
    tut_look_gull: boolean "false";
@@ -114,6 +122,13 @@ booleans {
    award_god_fearing: boolean "false";
    award_message_in_a_bottle: boolean "false";
    award_seagull: boolean "false";
+   award_acorn: boolean "false";
+   award_signal_fire: boolean "false";
+
+   // cutscenes
+   cutsceen_grove_destroy_seen: boolean "false";
+   cutsceen_plant_acorn_seen: boolean "false";
+   cutsceen_signal_fire_seen: boolean "false";
 
    lit_candle: boolean "false";
 }
@@ -330,8 +345,16 @@ locations {
    // jungle
    jungle_edge : location "A small footpath leads north into the jungle.  To the south is the beach." header="Jungle's Edge";
    jungle_entrance: location "{jungle_room_description}" header="Jungle";
-   jungle_w: location "{jungle_room_description}" header ="Jungle";
-   jungle_ww: location "{jungle_room_description}" header ="Jungle";
+   jungle_w: location "{jungle_room_description}" header ="Jungle (w)";
+   jungle_ww: location "{jungle_room_description}" header ="Jungle (ww)" {
+      on_command {
+         :if (cutsceen_grove_destroy_seen) {
+            :match "north _" {
+               :goto "burnt_grove";
+            }
+         }
+      }
+   }
    jungle_e: location "{jungle_room_description}" header ="Jungle";
    jungle_ee: location "{jungle_room_description}" header ="Jungle";
    jungle_ne: location "{jungle_room_description}" header ="Jungle";
@@ -449,8 +472,13 @@ locations {
       }
    };
 
-   lost_jungle: location "{lost_jungle_desc} You are lost.\n<Exits:<#666>> north, south, east, west" header = "Deep in the Jungle";
+   lost_jungle_e: location "";
+   lost_jungle_w: location "";
+   lost_jungle_s: location "";
+   lost_jungle_n: location "";
+   lost_jungle: location "{lost_jungle_desc} You are lost." header = "Deep in the Jungle";
    quiet_grove: location "You stand in a quiet grove filled with flowers. A single massive tree stands at the center. " header ="Quiet Grove";
+   burnt_grove: location "You stand in a burnt grove filled with only ashes and smoke." header ="Burnt Grove";
 
 
    dream_ship: location "You stand resolute at the helm as a wave unlike any you've ever seen rushes towards you. Your old grand-daddy used to tell tales of waves like this - <ship killers<15>> he called them." header="An Ending" {
@@ -553,9 +581,15 @@ objects {
    altar_moonstone: scenery "moonstone" at="western_heights" msg="Slightly bluer than limestone; glows when exposed to moonlight; known to be almost indestructable. The superstitious say it posses magical properties." conspicuous="false";
 
    // forest
-   wolf: object "a <dire wolf<#c6c>>" at="quiet_grove" msg="A dire wolf with a light grey mane and deep <golden<#fc3>> eyes. It matches your stare until finally you blink and look away.";
+   wolf: object "a <dire wolf<#c6c>>" at="quiet_grove" msg="A dire wolf with a light grey mane and deep <golden<#fc3>> eyes.";
    tall_tree: scenery "an ancient tree" at="quiet_grove" msg="It towers above you, with smooth white bark and light crimson blossoms. It could easily be thousands of years old - or older.";
    blue_flowers: scenery "flowers" at="quiet_grove" msg="You wonder among the flowers. Such <impossible hues<#r>> and shades of color, and a rich smell of chocolate and sunshine.";
+
+   burnt_tree: scenery "dead tree" at="burnt_grove" msg="Dead. The life force you felt before is gone.";
+   //dead_wolf: scenery "<dead wolf<#c6c>>" at="burnt_grove";
+   //dead_wizard: scenery "<dead wizard<#c6c>>" at="burnt_grove";
+   broken_staff: object "a broken staff" at="burnt_grove" msg="You wizard's staff is broken in half and powerless.";
+
 
    // mouthsand : object "sand in mouth" at = "washedashore";
    // d_rope: object "a rope" at="dream_ship";
@@ -693,6 +727,13 @@ connections {
       jungle_n,west, jungle_nw
       jungle_nw,south,jungle_exit
 
+      // lost jungle
+      lost_jungle,west, lost_jungle_w
+      lost_jungle,east, lost_jungle_e
+      lost_jungle,south, lost_jungle_s
+      lost_jungle,north, lost_jungle_n
+      quiet_grove,south, jungle_ww // protected by barrier
+
       jungle_exit,west,village
       jungle_ee,east,cliffs_e
       village,west,sloping_hills
@@ -707,7 +748,6 @@ connections {
 
       cliffs_e_cave_entrance,down,cliffs_e_cave_rear
 
-      quiet_grove,south,placeholder
       western_heights_dream,east,western_heights_dream_e
    ]
 }
@@ -742,6 +782,13 @@ zones {
 
 barriers {
 
+   access_to_goves: block_path {
+      from = "jungle_ww"
+      to="quiet_grove"
+      block_when_not = has_visited_grove
+      show_blocked_exit = false
+   }
+
    east_cave_light: block_path {
       from = cliffs_e_cave_entrance
       to = cliffs_e_cave_rear
@@ -749,7 +796,6 @@ barriers {
       show_blocked_exit = true
       message = "It's too dark to proceed any further without a light source."
    }
-
 
    hidden_cliff: block_path {
      from = cliffs_e_clearing
@@ -942,7 +988,7 @@ on_command {
          }
          : add_choice "a hero promised" {
             :print "Yet all of this was long ago foretold... also that one day a hero would come - to right the old wrongs.";
-            :print "First seek the wolf...  perhaps then the tree would offer it's wisdom...";
+            :print "Seek the wolf... perhaps then the tree would offer guidance...";
          }
          : add_choice "nevermind" { 
             :redescribe;
@@ -953,8 +999,21 @@ on_command {
    }
 
    :if (is_present("wolf")) {
-      :match "pet wolf; hug wolf" {
+      :match "look wolf" {
+         :examine "wolf";
+         :print "<The wolf matches your stare until you look away.<13>>";
+      }
+      :match "ask wolf" {
+         :print "What would you ask it?";
+      }
+      :match "talk wolf" {
+         :print "You prepare your best friendly animal voice.";
+         :print "\"Hey there wolfy boy. Lets be friends.\"";
+         :print "<The wolf just stares at you without understanding.<13>>";
+      }
+      :match "pet wolf; hug wolf; touch wolf" {
          :print "It doesn't look like it's desiring your affection at the moment.";
+         :done;
       }
    }
 
@@ -1235,6 +1294,8 @@ on_command {
       }
       :match "ask tree" {
          :print "Ask it what?";
+         :tutorial "Try <ask (subject)<6>> such as <ask weather<6>>.";
+         :done;
       }
       :match "ask _" {
       : cycle key = "woods_events" predictable_order = "false" skip_interval = "0"  {
@@ -1247,20 +1308,21 @@ on_command {
          }
       }
       :match "ask life" {
-         :print "<Fourty two<14>>"; :done; }
+         :print "<fourty two<14>>"; :done; }
       :match "ask wisdom; ask patience; ask truth" {
          :print "<good<14>>"; :done; }
       :match "ask fire; ask earth; ask wind; ask water" {
          :print "<elemental<14>>"; :done; }
       :match "ask love" {
          :print "<magic. deep.<14>>"; :done; }
-      :match "ask acorn" { :print "<help<14>>";  :done; }
+      :match "ask acorn" { :print "<help. plant, you must.<14>>";  :done; }
       :match "ask help" {
          :print "<...<14>>";
          :print "An acorn falls to the ground.";
          :create "acorn";
-         :done; }
-      :match "ask flower" {
+         :done; 
+      }
+      :match "ask flower; ask flowers" {
          :print "<for others<14>>"; :done; }
       :match "ask island" {
          :print "<here<14>>"; :done; }
@@ -1273,7 +1335,7 @@ on_command {
       :match "ask people" {
          :print "<wizard slaves<14>>"; :done; }
       :match "ask ship; ask shipwreck" {
-         :print "<not welcome<14>>"; :done; }
+         :print "<brings hero<14>>"; :done; }
       :match "ask age" {
          :print "<long. ago. time.<14>>"; :done; }
       :match "ask name; ask self; ask god; ask why" {
@@ -1476,6 +1538,36 @@ on_tick {
       }
    }
 
+   :print {( "linger" + linger() )};
+
+   // ****************
+   //  chase the wolf
+
+   :if (is_at("quiet_grove")) {
+      :set_true "has_visited_grove";
+   }
+
+   :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() > 4 ) {
+      :print "<The wolf looks at you, then darts off to the north<13>>";
+      :destroy "wolf";
+      :create "wolf" target="cliffs_e";
+   }
+
+
+   :if (is_present("wolf") && is_at("cliffs_e") ) {
+      :match "look wolf" {
+         :print "<The wolf looks back at you, then lopes off to the west<13>>";
+         :destroy "wolf";
+         :create "wolf" target="jungle_ee";
+      }
+   }
+
+    :if (is_present("wolf") && is_at("jungle_ee") ) {
+      :print "<The wolf gazes off into the jungle then back, as if asking you to follow.<13>>";
+      //:destroy "wolf";
+      //:create "wolf" target="jungle_ee";
+   }
+   
 
    // :print {( " " + weight_items_carried() )} ;
 
@@ -1504,10 +1596,10 @@ on_tick {
    }
 
 
-   :if (is_at("jungle_zone") && !is_present("wolf") && chance(10)) {
-      :print "<A wolf appears from deeper in the jungle. It sits nearby, watching.<13>>";
-      :create "wolf";
-   }
+   //:if (is_at("jungle_zone") && !is_present("wolf") && chance(10)) {
+   //   :print "<A wolf appears from deeper in the jungle. It sits nearby, watching.<13>>";
+   //   :create "wolf";
+   //}
 
    :if (is_at("quiet_grove")) {
       :match "look flowers" {
@@ -1754,6 +1846,14 @@ on_tick {
    }
    //:set_false "has_status";
 
+   :match "wiz end" {
+      :gosub "cutsceen_grove_destroy";
+   }
+
+   :match "look tree" {
+      :gosub "cutsceen_plant_acorn";
+   }
+
 }
 
 
@@ -1767,6 +1867,67 @@ subroutines {
    :print {( "- turns " + turns()  )};
    :print {( "- ticks " + ticks()  )};
   }
+
+  cutsceen_signal_fire : subroutine {
+   :if (cutsceen_signal_fire_seen) { :done; }
+   :set_true "cutsceen_signal_fire_seen";
+
+   :set_true "award_signal_fire";
+   :print "<Achievement<2>>: Smoke Signal";
+   :success;
+
+   :press_any_key;
+  }
+
+  cutsceen_plant_acorn : subroutine {
+   :if (cutsceen_plant_acorn_seen) { :done; }
+   :set_true "cutsceen_plant_acorn_seen";
+
+   :print "<You suddenly remember the acorn.<13>>";
+   :print "Kneeling down you dig a small hole and gently plant the acorn.";
+   :print "Was this somehow all part of a grand master plan?";
+   :print "Were you an ally of the grove or an unwitting pawn of the wizard...";
+   :press_any_key;
+   :print "...both?
+   :print "...neither?";
+
+   :set_true "award_acorn";
+   :print "<Achievement<2>>: Kings or Pawns";
+   :success;
+
+   :press_any_key;
+   :print "Looking up you notice the wizard's bloodwood staff laying nearby, broken into 3 pieces.";
+   :print "<A thought leaps unbidden into your mind.<13>>";
+   :print "Imagine the good one might do with even but a fraction of the wizard's powers.";
+   :print "You whistle idly as you carefully collect the staff pieces.";
+   :print "A short time later you leave the grove feeling confident of rescue and a long life.";
+  }
+
+  cutsceen_grove_destroy : subroutine {
+   :if (cutsceen_grove_destroy_seen) { :done; }
+   :set_true "cutsceen_grove_destroy_seen";
+
+   :print "A dark robed figure stands before the ancient tree.";
+
+   :print "<The wizard laughs maniacly.<13>>";
+
+   :print "\"So very foolish.  Millinnia have I slept, waited, and dreamed.  A human?  You make it all too easy.  The grove - so long hidden from my all-seeing eyes.  I had only to follow the human stink.\"";
+
+   :print "<The wizard raises his bloodwood staff.<13>>";
+
+   :print "“What began long ago, today I conclude.”";
+
+   :print "<The wizard recites words of power.<13>>";
+   :print "Red fire rains down, engulfing the massive tree. The ground shakes and you are thrown backwards into the jungle.";
+
+   :press_any_key;
+   :print "The ground shakes again and you hear a vicious growl as you lose consciousness.";
+   :press_any_key;
+
+   :goto "jungle_ww";
+   :redescribe;
+  }
+
   achievements : subroutine {
    :print "^c^✜ ACHIEVEMENTS ✜";
 
@@ -1778,9 +1939,14 @@ subroutines {
    :append "{ award_god_fearing ? ` God-fearing. ` }";
    // eat the darn seagull
    :append "{ award_seagull ? ` Perseverance. ` }";
+   // plant the acorn
+   :append "{ award_acorn ? ` Kings or Pawns. ` }";
+   // light the signal fire
+   :append "{ award_signal_fire ? ` Smoke Signal. ` }";
 
    :print "\n^c^---";
   }
+
   win_game : subroutine {
    //:pause "800" ;
    //:print "^c^2..." ;
@@ -1791,6 +1957,7 @@ subroutines {
    :print {( "- You solved " + side_quests_complete + " side quests.")}
    :win_game ;
   }
+
   help: subroutine {
       : print "- type '<LOOK<#ec9>>' or '<LOOK<#ec9>> <thing<#8ad>>' to examine clues.";
       : print "- type '<I<#ec9>>' to see what you are holding (and wearing).";
@@ -1810,10 +1977,7 @@ subroutines {
       //: print "- type '<LOAD<#ec9>>' or '<SAVE<#ec9>>' to load or save a game.";
       : print "- type '<QUIT<#ec9>>' to restart a game.";
   }
-  bootup_more: subroutine {
-   //  :print "bootup2 sub";
-    :return;
-  }
+  
   ask_tutorial: subroutine {
    :print "\n\n\n";
    :tutorial "Hello, I'm your friendly tutorial. I'll help you learn how to play if you're new to text adventure games.";
@@ -1825,13 +1989,13 @@ subroutines {
          no_answer = NO
       }
   }
+
   bootup : subroutine {
    //  :print "bootup running";
     :create "your_earing" target="inventory";
     :create "your_pants" target="inventory";
     :wear "your_earing";
     :wear "your_pants";
-    :return;
   }
   wearing : subroutine {
       // : append "You\'re holding:\s" ;
