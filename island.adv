@@ -23,6 +23,10 @@
 
 on_startup {
 
+  :goto "village_square";
+  :pocket "medallion";
+  :wear "medallion";
+
   // : beep millis = "100"  pitch = "0" ;
   // : beep millis = "100"  pitch = "2" ;
   // : beep millis = "100"  pitch = "4" ;
@@ -48,12 +52,12 @@ on_startup {
   //:gosub "dream_of_storm";
   //:goto "quiet_grove";
 
-  :goto "cliffs_e_clearing";
+  //:goto "cliffs_e_clearing";
   :pocket "red_marble";
   :pocket "blue_marble";
 
   //:create "wolf";
-  //:goto "beach";
+  
 
 
   // : beep millis = "100"  pitch = "6" ;
@@ -70,7 +74,8 @@ template = talp
 ######################################
 
 game_settings {
-   inventory_items_limit_var = inventory_limit
+  inventory_items_limit_var = inventory_limit
+  auto_pluralize_nouns = true
 }
 
 strings {
@@ -305,20 +310,21 @@ locations {
         :match "look ship; look shipwreck; look wreck; look south" {
           :print "A black skull and crossbones flutters in the wind. You wonder if you could swim that far.";
         };
-        :match "south -" { 
-          :if (!is_worn("medallion")) {
-            :print "How? You can't exactly walk to the ship."; 
-          } :else {
+        :match "south _" { 
+          :if (is_worn("medallion") && knows_to_swim) {
             :print "You swim out to the ship.";
+            :goto "shipwreck";
             :press_any_key;
+          } :else {
+            :print "How? You can't exactly walk to the ship."; 
           }
         };
         :match "swim _" {
           :if (is_worn("medallion")) {
               :set_true "knows_to_swim";
               :print "You swim out to the ship.";
-              :press_any_key;
               :goto "shipwreck";
+              :press_any_key;
           }
           :else {
               :print "It's pretty far out.  You aren't feeling strong or lucky enough at the moment." ;
@@ -361,15 +367,30 @@ locations {
   };
 
   // village
-  village_square: location "The village surrounds you on all sides.  It's far too quiet here, like a ghost town." header="Village, Square";
-  village_n: location "To the north is a large hut that seems important." header="Village";
-  village_s: location "" header="Village";
-  village_e: location "" header="Village";
-  village_w: location "" header="Village";
-  village_hut: location "Larger than the rest, this hut seems quite homey. Dust covers everything." header="Village, Elder's Hut";
+  village_square: location "The village surrounds you on all sides.  It's far too quiet, like a ghost town." header="Village, Square";
+  village_n: location "To the north stands a large hut." header="Village";
+  village_s: location "Small huts surround both sides of the street." header="Village";
+  village_e: location "Small huts surround both sides of the street." header="Village";
+  village_w: location "Small huts surround both sides of the street." header="Village";
+  village_hut: location "This hut is homey, yet spacious - larger than the others. A layer of dust covers everything." header="Village, Elder's Hut" {
+    on_command {
+      :match "sleep bed" {
+        :print "Ok, but just a quick nap...";
+        :print "Zzzz...";
+        :press_any_key;
+        :redescribe;
+      }
+    }
+  }
 
   // jungle
-  jungle_edge: location "A small footpath leads north into the jungle.  To the south is the beach." header="Jungle's Edge";
+  jungle_edge: location "A small footpath leads north into the jungle.  To the south is the beach." header="Jungle's Edge" {
+    on_command {
+      :match "look water; drink water" {
+        :print "There is no water here, you'll have to go elsewhere.";
+      }
+    }
+  }
   jungle_entrance: location "{jungle_room_description}" header="Jungle";
   jungle_w: location "{jungle_room_description}" header ="Jungle (w)";
   jungle_ww: location "{jungle_room_description}" header ="Jungle (ww)" {
@@ -404,11 +425,14 @@ locations {
           :press_any_key;
           :goto "western_heights";
         }
+        :match "look injury" {
+          :print "You're not certain of the injury, but the wolf looks like it's in pain.";
+        }
         :match "save wolf; help wolf; free wolf; unbind wolf" {
           :print "The urge to intervene is strong...";
           :print "Yet some part of you knows these events cannot be changed.";
         }
-        :match "attack wizard; fight wizard; hit wizard; stop wizard; throw knife" {
+        :match "attack wizard; fight wizard; hit wizard; stop wizard; throw knife; stab wizard; kill wizard" {
           :print "The urge to intervene is strong...";
           :print "Yet some part of you knows these events cannot be changed.";
         }
@@ -457,6 +481,12 @@ locations {
           }
           :match "spy shipwreck" {
             :print "A half-sunken pirate ship.";
+          }
+          :match "spy village" {
+            :print "A small village consisting of many huts.";
+          }
+          :match "spy ocean; spy sea" {
+            :print "Beautiful blue as far as the eye can see.";
           }
           :match "spy down" {
             :print "Huge boulders and angry ocean so close you can almost taste it.";
@@ -517,6 +547,9 @@ locations {
   
   cliffs_e_clearing: location "You stand in a large clearing, bordered by dense jungle to the west. A huge boulder clings resolutely to the edge of the cliff." header="Eastern Cliffs,  Clearing" {
     on_command {
+        :match "sit stone" {
+          :print "You sit down for a moment and ponder the life choices that led you to this point...";
+        }
         :match "push boulder" {
           :print "It's massive.  It doesn't budge.";
           :if (!has_seen_cliff_steps) {
@@ -564,13 +597,13 @@ locations {
         :match "drop _" {
           :print "You can't really drop anything in this place...";
         }
-        :match "north -; south -; up -; east -; west -" {
+        :match "north _; south _; up _; east _; west _" {
           :print "You dare not leave your post.";
         }
-        :match "up -" {
+        :match "up _" {
           :print "But why in the heck would you want to be up in the air in a storm like this?";
         }
-        :match "down -" {
+        :match "down _" {
           :print "Retreating below deck sounds great, but you dare not leave your post.";
         }
         :match "mutiny -;kill captain" {
@@ -662,12 +695,13 @@ locations {
 
 objects {
   // village
+  bucket: object "bucket" at="village_square" msg="Likely used for drawing the water up from the well.";
   well: scenery "well" at="village_square" msg="It looks like hasn't been used in some time. Seems deep.";
   vendor_booths: scenery "vendor booths" at="village_square" msg="You see the remains of fruit that rotted long ago and faded fabrics.";
 
-  bed: scenery "a bed" msg="a small bed" at="village_hut";
-  kettle: scenery "a kettle" msg="a large kettle hangs over the fireplace" at="village_hut";
-  fireplace: scenery "a fireplace" msg="looks like it hasn't been used in many years" at="village_hut";
+  bed: scenery "a bed" msg="A cozy small bed." at="village_hut";
+  kettle: scenery "a kettle" msg="A large kettle hangs over the fireplace, smells like grandma's chili." at="village_hut";
+  fireplace: scenery "a fireplace" msg="Looks like it hasn't been used in many years." at="village_hut";
   tome: object "tome" msg="a large book, very old" at="village_hut";
 
   // western_heights_dream
@@ -740,7 +774,7 @@ objects {
   love_letters: object "love letters" msg="Poetry and love letters to the Captain's old girlfriend.";
 
   // wood
-  driftwood : object "driftwood" at = "beach_ww";
+  driftwood : object "driftwood" at = "beach_ww" msg="Sunbleached and rough, been drifting a while.";
   chopped_driftwood : object "chopped driftwood";
   chopped_oak : object "chopped oak";
   chopped_darkwood : object "chopped darkwood";
@@ -768,7 +802,7 @@ objects {
   // sunken ship
   spyglass :object "a spyglass" at="ship_crowsnest" msg="A spyglass, good for looking long distances.";
   logbook :object "the captain's log" at="ship_captains" msg="This huge tome is where the Captain logged the missions.";
-  candle :object "a candle" at ="ship_captains" msg="Just a candle plus a few matches.";
+  candle :object "a candle" at ="ship_captains" msg="Just an ordinary candle, smells like honey.";
   charts :object "nautical charts" at="ship_captains" msg= "For now, scrap paper. Perhaps useful if you ever get off this island.";
   book :object "a book" at="ship_captains" msg ="Moby Dick";
   moby_book :object "Moby Dick (book)" msg="Moby Dick" noun="book";
@@ -790,10 +824,15 @@ vocabulary {
    : verb / aliases = [touch, feel]
    : verb / aliases = [talk, speak, greet]
    : noun / aliases = [bird, seagull, gull]
-   : noun / aliases = [log, logbook]
+   : noun / aliases = [log, logbook, tome]
+   : noun / aliases = [tree, trees]
    : noun / aliases = [wood, driftwood, oak, darkwood]
    : noun / aliases = [shell, seashell]
    : noun / aliases = [matchbook, matches, match]
+   : noun / aliases = [bonfire, fire]
+   : noun / aliases = [marble, marbles, eye, eyes]
+   : noun / aliases = [statue, wolf]
+   : noun / aliases = [flowers,flower]
    }
 
 connections {
@@ -948,11 +987,19 @@ on_command {
 
    // HELP FOR USE *
 
-   :match "use *" {
-      :print "Objects may not be \"used\". Please try a different verb/noun.";
-      :tutorial "For example, you might try:\n- <unlock chest<6>> instead of <use key<6>>\n- <light candle<6>> instead of <use match<6>>";
-      :done;
-   }
+  :match "use *" {
+    :print "Objects may not be \"used\". Please try a different verb/noun.";
+    :tutorial "For example, you might try:\n";
+    :tutorial "- <unlock chest<6>> instead of <use key<6>>";
+    :tutorial "- <light candle<6>> instead of <use match<6>>";
+    :tutorial "- <spy north<6>> instead of <use spyglass<6>>";
+    :done;
+  }
+
+  :match "look around" {
+    :print "Looking 'around' doesn't work.\nInstead, try just <look<6>> or <look object<6>>.";
+    :done;
+  }
 
    // TUTORIAL
 
@@ -1035,6 +1082,14 @@ on_command {
       :match "light match" {
          :print "The match burns out almost as quickly as you light it.";
       }
+   }
+
+   // ACORN
+
+   :if (is_carried("acorn")) {
+    :match "plant acorn" {
+      :print "You somehow feel this isn't the time.";
+    }
    }
 
    // SIGNAL FIRE
@@ -1156,6 +1211,13 @@ on_command {
 
    // WOLF STATUS - COMES TO LIFE
 
+  :if (is_present("wolf_statue") || is_present("wolf_statue2") || is_present("wolf_statue3")) {
+    :match "touch statue" {
+      :print "The stone is smooth, yet also somehow... lifelike...?";
+      :print "...as if you're feeling real fur, petting an actual wolf.";
+      :done;
+    }
+  }
    :if (is_present("wolf_statue") || is_present("wolf_statue2")) {
       :match "look statue" {
          :examine;
@@ -1165,13 +1227,15 @@ on_command {
          // :create "wolf_statue2";
          //:done;
       }
-      :match "insert stone; insert eyes; place eyes; place stones; place marbles; add eyes; add stone" {
+      :match "insert stone; insert eyes; place eyes; add eyes; place stones; add stone" {
          :if (is_present("red_marble") && is_present("blue_marble")) {
-            :print "The stone eyes lock into place - their color fading to a dull shade of gold.";
-            :print "<You suddenly feel as if you’re being watched.<13>>";
+            :print "The stone eyes lock into place and their color fades to a dull shade of gold.";
+            :print "<You feel as if you’re being watched.<13>>";
             :destroy "wolf_statue"; 
             :destroy "wolf_statue2"; 
             :create "wolf_statue3";
+            :destroy "blue_marble";
+            :destroy "red_marble";
             :set_true "is_wolf_awake";
          }
       }
@@ -1289,21 +1353,33 @@ on_command {
    }
 
    :if (is_present("coconut")) {
-      :match "crack coconut; split coconut" {
+      :match "crack coconut; split coconut; smash coconut" {
          :print "Your grand-daddy never taught ya to crack open a coconut.";
          :print "You could just cut into it with your trusty knife.";
          :if (!is_carried("knife")) {
-          :print "Where of where is your trusty knife?";
+          :print "Where oh where is your trusty knife?";
          }
       }
+      :match "stab coconut" {
+        :print "Geez!  You want to eat it, not kill it!";
+      }
+      :match "eat coconut; cut coconut; slice cococut; pry coconut" {
+        :if (is_carried("knife")) {
+          :print "You cut into the coconut with your knife.\nDelicious.";
+          :set_integer var ="hunger" value="0";
+          :destroy "coconut";
+          :done;
+        }
+      }
+      :match "cut coconut; slice coconut; pry coconut" {
+        :if (!is_carried("knife")) {
+          :print "Great idea, if only you had a knife!";
+          :print "Where oh where is your trusty knife?";
+        }
+      }
       :match "eat coconut" {
-         :if (is_carried("knife")) {
-            :print "You cut into the coconut with your knife.\nDelicious.";
-            :set_integer var ="hunger" value="0";
-            :destroy "coconut";
-            :done;
-         } :else {
-            :print "You need some way to open upthe coconut.";
+         :if (!is_carried("knife")) {
+           :print "You need some way to get into the coconut.";
          }
       }
    }
@@ -1316,11 +1392,14 @@ on_command {
       }
    }
 
-   :match "get wood; get driftwood" {
-      :if (is_present "driftwood") {
-         :print "It's too large to carry as it is.\nYou'd first need to break it into smaller pieces.";
-      }
-   }
+  :if (is_present "driftwood") {
+    :match "break wood" {
+      :print "If only you had a tool for that...";
+    }
+    :match "get wood; get driftwood" {
+      :print "It's too large to carry as it is.\nYou'd first need to break it into smaller pieces.";
+    }
+  }
 
   // CHOPPING UP WOOD
 
@@ -1402,11 +1481,15 @@ on_command {
    
   // FOLLOW THE WOLF
 
+  // is_at("jungle_ee")
   :match "follow wolf" {
-    :print "<With one last look at you, the wolf plunges into the jungle.<13>>\n You rush after and are hopefully lost in only minutes.";
-
-    :set_integer var = "lost_jungle_counter"  value = "0" ;
-    :goto "lost_jungle";
+    :if (is_at("cliffs_e_clearing")) {
+      :print "Follow it where? It's just sitting there.";
+    } :else {
+      :print "<With one last look at you, the wolf plunges into the jungle.<13>>\n You rush after and are hopefully lost in only minutes.";
+      :set_integer var = "lost_jungle_counter"  value = "0" ;
+      :goto "lost_jungle";
+    }
   }
 
    // LOST IN JUNGLE
@@ -1469,14 +1552,16 @@ on_command {
         :print "<elemental. power.<14>>"; :done; }
       :match "ask love" {
         :print "<magic. deep.<14>>"; :done; }
+      :match "ask altar" { :print "<tragic. necessary.<14>>";  :done; }  
       :match "ask acorn" { :print "<help. plant.<14>>";  :done; }
+      :match "ask plant" { :print "<new life. good.<14>>";  :done; }
       :match "ask help" {
         :print "<help.<14>>";
         :print "A small acorn falls to the ground.";
         :create "acorn";
         :done; 
       }
-      :match "ask flower; ask flowers" {
+      :match "ask flowers" {
         :print "<for others<14>>"; :done; }
       :match "ask island" {
         :print "<here<14>>"; :done; }
@@ -1484,7 +1569,9 @@ on_command {
         :print "<greed. sad.<14>>"; :done; }
       :match "ask wolf; ask dragon" {
         :print "<old ones<14>>"; :done; }
-      :match "ask wizard; ask stranger" {
+      :match "ask stranger" {
+        :print "<evil one. many guises.<14>>"; :done; }
+      :match "ask wizard" {
         :print "<evil one<14>>"; :done; }
       :match "ask people" {
         :print "<wizard slaves<14>>"; :done; }
@@ -1498,7 +1585,7 @@ on_command {
          :print "... silence ...";
       }
 
-      :match "take flower; pick flower; get flower" {
+      :match "take flowers; pick flowers; get flowers" {
          :print "<The wolf growls as you reach towards a flower.<13>>";
          :print "You reconsider.";
       }
@@ -1762,7 +1849,7 @@ on_tick {
     }
   }
 
-  :if (is_present("wolf") && is_at("jungle_ee") ) {
+  :if (is_present("wolf") && is_at("jungle_ee")) {
     :print "<The wolf gazes off into the jungle then back, as if asking you to follow.<13>>";
       //:destroy "wolf";
       //:create "wolf" target="jungle_ee";
@@ -1975,6 +2062,9 @@ on_tick {
                :set_string var="tmp_string" text="You hear a fellow crewmate cry out in the night.";
                :set_string var="tmp_string" text="You really wish you'd used the restroom earlier.";
                :set_string var="tmp_string" text="You imagine the ship being torn apart.";
+               :set_string var="tmp_string" text="Several cats run madly across the deek meowing fearfully.";
+               :set_string var="tmp_string" text="You see your life flashing before your eyes.";
+               :set_string var="tmp_string" text="You regret the life choices that brought you here.";
             }
       }
 
@@ -2018,7 +2108,7 @@ on_tick {
    }
 
   :if (is_present("burnt_tree")) {
-    :match "look tree" {
+    :match "look tree; touch tree" {
       :gosub "cutsceen_plant_acorn";
     }
   }
