@@ -3,28 +3,28 @@
 ##################################################
 
 //on_debug {
-// : goto "dream_ship";
-
-// :goto "cliffs_e";
-//:goto "shipwreck";
-
-//:pocket "red_marble";
-// :pocket "blue_stone";
-
-//:goto "western_heights";
-//:create "chopped_driftwood";
-//:create "chopped_oak";
-//:create "chopped_darkwood";
-//:create "charts";
-//:pocket "matchbook";
-
 //}
 
+start_at = washedashore
+template = talp
+
+game_information {
+	game_name = Lost Island
+ 	game_shortname = LostIsland
+	written_by = Josh Goebel
+ 	uuid = cf74ec25-337d-454f-9a0c-273d4c6bb604
+	year_of_release = 2022
+	game_version = 0.5.0
+	copyright_message = Copyright (C) 2022 Josh Goebel. Not for commercial use. Do not redistribute.
+	short_synopsis = Discover the secrets of the lost island
+}
 
 on_startup {
 
-  :goto "village_square";
+  
+  :goto "quiet_grove";
   :pocket "medallion";
+  :pocket "spyglass";
   :wear "medallion";
 
   // : beep millis = "100"  pitch = "0" ;
@@ -38,6 +38,7 @@ on_startup {
   :gosub "title_screen";
   :gosub "ask_tutorial";
   :gosub "bootup";
+  :gosub "main_music_theme";  
 
   //:goto "western_heights";
   //:pocket "spyglass";
@@ -66,22 +67,18 @@ on_startup {
   // : beep millis = "100"  pitch = "0" ;
 }
 
-start_at = washedashore
-template = talp
 
 ######################################
 #  Strings                           #
 ######################################
 
-game_settings {
-  inventory_items_limit_var = inventory_limit
-  auto_pluralize_nouns = true
-}
-
 strings {
   tmp_string: string "";
   status : string "" ;
   blank : string "";
+  last_soundtrack : string "";
+  soundtrack : string "";
+  sound_volume: string "normal" scope="survivor";
 
   prompt : string "[]: ";
   flower_color: string "yellow";
@@ -102,11 +99,15 @@ strings {
 ######################################
 
 booleans {
+  tmp_bool: boolean "false";
   tutorial_on : boolean "true";
   is_debug: boolean "true";
   always: boolean "true";
   never: boolean "false";
   has_status: boolean "false";
+
+  // system
+  is_sound_muted: boolean "false";
 
   // is
   is_wolf_awake: boolean "false";
@@ -114,6 +115,7 @@ booleans {
   is_flashback: boolean "false";
 
   // has seen
+  has_won_game: boolean "false";
   has_seen_cliff_steps: boolean "false";
   has_seen_wolf: boolean "false";
   has_visited_grove: boolean "false";
@@ -167,7 +169,10 @@ integers {
 
    side_quests_complete: integer "0";
    kill_chance: integer "0";
+
    total_inputs: integer "0";
+   total_looks: integer "0";
+   total_rooms: integer "0";
 }
 
 collections {
@@ -273,20 +278,6 @@ themes {
    }
 }
 
-assets {
-   fonts {
-
-      userfont_antic : ttf {
-         // Extracted from https://fonts.googleapis.com/css2?family=Montserrat&display=swap
-         filepath     = "https://fonts.gstatic.com/s/anticslab/v15/bWt97fPFfRzkCa9Jlp6IacVcXExq9Qs.woff2"
-         snap_vert    = "false"
-         // This is the balance between average vertical pixels and average horz pixels for
-         // use in mapping the font's sizing to the 'columns' property in the theme settings.
-         horz_pixels  = "8"
-         vert_pixels  = "15"
-      }
-   }
-}
 
 
 locations {
@@ -392,16 +383,10 @@ locations {
     }
   }
   jungle_entrance: location "{jungle_room_description}" header="Jungle";
-  jungle_w: location "{jungle_room_description}" header ="Jungle (w)";
-  jungle_ww: location "{jungle_room_description}" header ="Jungle (ww)" {
-    on_command {
-        :if (cutsceen_grove_destroy_seen) {
-          :match "north _" {
-              :goto "burnt_grove";
-          }
-        }
-    }
-  }
+  jungle_w: location "{jungle_room_description}" header ="Jungle";
+  // TODO: better description
+  south_of_grove: location "To the north is the sacred grove.  You see smoke in the distance." header ="Outside the Grove";
+  jungle_ww: location "{jungle_room_description}" header ="Jungle";
   jungle_e: location "{jungle_room_description}" header ="Jungle";
   jungle_ee: location "{jungle_room_description}" header ="Jungle";
   jungle_ne: location "{jungle_room_description}" header ="Jungle";
@@ -423,6 +408,8 @@ locations {
         :match "close eyes; shut eyes; blink eyes" {
           :print "You close your eyes... slowly the cold wind and rain receed until there is only silence...";
           :press_any_key;
+          :set_theme "main_theme";
+          :gosub "main_music_theme";  
           :goto "western_heights";
         }
         :match "look injury" {
@@ -460,8 +447,11 @@ locations {
           :press_any_key;
           :print "...then a sudden headache...";
           :press_any_key;
+          :set_theme "dream_theme";
+          :clear_screen;
           :print "...and suddenly you are here, but not here.";
           :goto "western_heights_dream";
+          :done;
         }
         :match "look down" {
           :print "It looks to be a sheer cliff dropping hundreds of feet to large rocks and angry ocean below.";
@@ -478,21 +468,27 @@ locations {
             :print "<Achievement<2>>: Planet of the Apes";
             :set_true "award_planet_of_apes";
             :success;          
+            :done;
           }
           :match "spy shipwreck" {
-            :print "A half-sunken pirate ship.";
+            :print "A half-sunken pirate ship that's seen better days.";
+            :done;
           }
           :match "spy village" {
-            :print "A small village consisting of many huts.";
+            :print "A small rural village consisting of many huts.";
+            :done;
           }
           :match "spy ocean; spy sea" {
-            :print "Beautiful blue as far as the eye can see.";
+            :print "Nothing but beautiful blue as far as the eye can see.";
+            :done;
           }
           :match "spy down" {
-            :print "Huge boulders and angry ocean so close you can almost taste it.";
+            :print "Angry ocean beats agaisnt huge boulders, so close you can almost taste it.";
+            :done;
           }
           :match "spy _" {
             :print "You spy nothing out of the ordinary.";
+            :done;
           }
         }
         :match "look west" {
@@ -568,7 +564,16 @@ locations {
   lost_jungle_s: location "";
   lost_jungle_n: location "";
   lost_jungle: location "{lost_jungle_desc} You are lost." header = "Deep in the Jungle";
-  quiet_grove: location "You stand in a quiet grove filled with flowers. A single massive tree stands at the center. " header ="Quiet Grove";
+  quiet_grove: location "You stand in a quiet grove filled with flowers. A single massive tree stands at the center. " header ="Quiet Grove" {
+    //on_command {
+    //  :match "south _" {
+    //    :if (cutsceen_grove_destroy_seen) {
+    //      :goto "south_of_grove";
+    //      :done;
+    //    }
+    //  }
+    //}
+  }
   burnt_grove: location "You stand in a burnt grove filled full of only ashes and smoke." header ="Burnt Grove" {
     on_command {
       :match "look staff" {
@@ -833,77 +838,83 @@ vocabulary {
    : noun / aliases = [marble, marbles, eye, eyes]
    : noun / aliases = [statue, wolf]
    : noun / aliases = [flowers,flower]
+  // directions
+   : noun / aliases = [north, n]
+   : noun / aliases = [south, s]
+   : noun / aliases = [east, e]
+   : noun / aliases = [west, w]
    }
 
 connections {
-   from, direction, to = [
-      washedashore, north, placeholder,
-      waters_edge, north, beach,
-      waters_edge, south, shipwreck,
+  from, direction, to = [
+    washedashore, north, placeholder,
+    waters_edge, north, beach,
+    waters_edge, south, shipwreck,
 
-      // dream intro
-      dream_ship, north, dream_ship_placeholder,
-      dream_ship, south, dream_ship_placeholder,
-      dream_ship, down, dream_ship_placeholder,
-      dream_ship, up, dream_ship_placeholder,
+    // dream intro
+    dream_ship, north, dream_ship_placeholder,
+    dream_ship, south, dream_ship_placeholder,
+    dream_ship, down, dream_ship_placeholder,
+    dream_ship, up, dream_ship_placeholder,
 
-      // shipwreck
-      shipwreck, up, ship_crowsnest,
-      shipwreck, down, ship_captains,
+    // shipwreck
+    shipwreck, up, ship_crowsnest,
+    shipwreck, down, ship_captains,
 
-      // beach
-      beach_ww, north, beach_ww_rocky,
-      beach_ww_rocky, down, beach_ww_cave,
-      beach, north, jungle_edge,
-      beach, west, beach_w,
-      beach, east, beach_e,
-      beach_e, east, beach_ee,
-      beach_w, west, beach_ww,
+    // beach
+    beach_ww, north, beach_ww_rocky,
+    beach_ww_rocky, down, beach_ww_cave,
+    beach, north, jungle_edge,
+    beach, west, beach_w,
+    beach, east, beach_e,
+    beach_e, east, beach_ee,
+    beach_w, west, beach_ww,
 
-      // village
-      village,enter,village_s
-      village_square,north, village_n
-      village_square,east, village_e
-      village_square,south, village_s
-      village_square,west, village_w
-      village_n,north, village_hut
+    // village
+    village,enter,village_s
+    village_square,north, village_n
+    village_square,east, village_e
+    village_square,south, village_s
+    village_square,west, village_w
+    village_n,north, village_hut
 
-      // jungle
-      jungle_edge, north, jungle_entrance
-      jungle_entrance,west, jungle_w
-      jungle_w,west,jungle_ww
-      jungle_entrance,north,jungle_e
-      jungle_e,north,jungle_ne
-      jungle_ne,east,jungle_ee
-      jungle_ne,west,jungle_n
-      jungle_n,west, jungle_nw
-      jungle_nw,south,jungle_exit
+    // jungle
+    jungle_edge, north, jungle_entrance
+    jungle_entrance,west, jungle_w
+    jungle_w,west,jungle_ww
+    jungle_entrance,north,jungle_e
+    jungle_e,north,jungle_ne
+    jungle_ne,east,jungle_ee
+    jungle_ne,west,jungle_n
+    jungle_n,west, jungle_nw
+    jungle_nw,south,jungle_exit
 
-      // lost jungle
-      lost_jungle,west, lost_jungle_w
-      lost_jungle,east, lost_jungle_e
-      lost_jungle,south, lost_jungle_s
-      lost_jungle,north, lost_jungle_n
-      quiet_grove,south, jungle_ww // protected by barrier
+    // lost jungle
+    lost_jungle,west, lost_jungle_w
+    lost_jungle,east, lost_jungle_e
+    lost_jungle,south, lost_jungle_s
+    lost_jungle,north, lost_jungle_n
+    quiet_grove,south, jungle_ww 
+    south_of_grove,north,burnt_grove
 
-      jungle_exit,west,village
-      jungle_ee,east,cliffs_e
-      village,west,sloping_hills
-      sloping_hills,west,western_heights
-      cliffs_e,south,cliffs_e_clearing
-      cliffside_east,up, cliffs_e_clearing
+    jungle_exit,west,village
+    jungle_ee,east,cliffs_e
+    village,west,sloping_hills
+    sloping_hills,west,western_heights
+    cliffs_e,south,cliffs_e_clearing
+    cliffside_east,up, cliffs_e_clearing
 
-      // vines leading into the cliffside      
-      cliffs_e_vine_top,west,cliffside_east
-      cliffs_e_vine_top,down,cliffs_e_vine_m
-      cliffs_e_vine_m,down,cliffs_e_vine_b
-      cliffs_e_vine_b,enter,cliffs_e_cave_entrance
+    // vines leading into the cliffside      
+    cliffs_e_vine_top,west,cliffside_east
+    cliffs_e_vine_top,down,cliffs_e_vine_m
+    cliffs_e_vine_m,down,cliffs_e_vine_b
+    cliffs_e_vine_b,enter,cliffs_e_cave_entrance
 
-      cliffs_e_cave_entrance,down,cliffs_e_cave_rear
+    cliffs_e_cave_entrance,down,cliffs_e_cave_rear
 
-      // western heights flashback
-      western_heights_dream,east,western_heights_dream_e
-   ]
+    // western heights flashback
+    western_heights_dream,east,western_heights_dream_e
+  ]
 }
 
 zones {
@@ -1000,6 +1011,11 @@ on_command {
     :print "Looking 'around' doesn't work.\nInstead, try just <look<6>> or <look object<6>>.";
     :done;
   }
+
+  :match "spy _" {
+    :print "You'll too low to spy much here, try again from a greater height.";
+  }
+
 
    // TUTORIAL
 
@@ -1770,7 +1786,7 @@ on_command {
   :match "eat _" { :print "Are you sure that's edible?"; }
 
   :match "about -; credits -" {
-    :print "TODO: credits here";
+    :gosub "credits";
   }
 
 
@@ -2069,9 +2085,9 @@ on_tick {
       }
 
       // :pause "250";
-      :beep millis="150" pitch="-15";
-      :beep millis="125" pitch="-19";
-      :beep millis="100" pitch="-28";
+      //:beep millis="150" pitch="-15";
+      //:beep millis="125" pitch="-19";
+      //:beep millis="100" pitch="-28";
       :if (tmp_string == "") {
         :print "^c^... {until_wave} ...";
       } :else {
@@ -2100,19 +2116,38 @@ on_tick {
 
    }
 
-  :gosub "track_inputs";
+  :gosub "track_input_stats";
   :gosub "update_status_effects";
 
    :match "wiz end" {
       :gosub "cutsceen_grove_destroy";
    }
 
+  :match "cheat wiz_cutscene" {
+    :gosub "cutsceen_grove_destroy";
+    :done;
+  }
+  :match "cheat win" {
+    :gosub "win_game"; 
+    :done;
+  }
+  :match "cheat plant" {
+    :gosub "cutsceen_plant_acorn";
+    :done;
+  }
+
+  :match "success _" {
+    :success;
+  }
+
   :if (is_present("burnt_tree")) {
     :match "look tree; touch tree" {
       :gosub "cutsceen_plant_acorn";
     }
   }
-}
+
+  :gosub "auto_music";
+} // end of global on_tick // 
 
 
 subroutines {
@@ -2125,7 +2160,10 @@ subroutines {
     :set_integer var="dream_counter" value="-1";
     :set_integer var="until_wave" value="31";
     :set_theme "dream_theme";
+    
+    :create "d_stranger" target="dream_ship";
     :goto "dream_ship";
+    :press_any_key;
   }
 
   dream_of_storm_end: subroutine {
@@ -2134,13 +2172,12 @@ subroutines {
     :set_integer var="dream_counter" value="-1";
     :set_integer var="until_wave" value="31";
     :set_theme "main_theme";
+    :gosub "main_music_theme";  
     :goto "beach_ww_rocky";
   }
 
-  stats : subroutine {
-   :print "STATS";
-   :print {( "- turns " + turns()  )};
-   :print {( "- ticks " + ticks()  )};
+  main_music_theme: subroutine {
+    :play_music "music_fantasy_overture";
   }
 
   cutsceen_signal_fire : subroutine {
@@ -2180,7 +2217,8 @@ subroutines {
     :press_any_key;
     :create "broken_staff";
     :redescribe;
-    }
+    //:return;
+  }
 
   cutsceen_wizard_staff : subroutine {
     :if (cutsceen_wizard_staff_seen) { :done; }
@@ -2203,6 +2241,9 @@ subroutines {
   cutsceen_grove_destroy : subroutine {
     :if (cutsceen_grove_destroy_seen) { :done; }
     :set_true "cutsceen_grove_destroy_seen";
+
+    // give us a chance to switch the grove music to action
+    :gosub "auto_music";
 
     :print "^c^---";
     :print "A dark robed figure stands before the ancient tree.";
@@ -2234,13 +2275,27 @@ subroutines {
     //:print "The ground shakes again and you hear a vicious growl as you lose consciousness.";
     :press_any_key;
 
-    :goto "jungle_ww";
+    :goto "south_of_grove";
     :redescribe;
   }
 
   achievements : subroutine {
-   :print "^c^✜ ACHIEVEMENTS ✜";
+   :print "^c^<✜ ACHIEVEMENTS ✜<13>>";
 
+  :set_true "award_bookworm";
+  :set_true "award_god_fearing";
+  :set_true "award_message_in_a_bottle";
+  :set_true "award_seagull";
+  :set_true "award_acorn";
+  :set_true "award_signal_fire";
+  :set_true "award_whoami";
+  :set_true "award_treasure_island";
+  :set_true "award_find_dragon";
+  :set_true "award_tarzan";
+  :set_true "award_planet_of_apes";
+  :set_true "award_bad_boys";
+   
+   :set_true "tmp_bool";
    // trying to read everything
    :append "{ award_bookworm ? ` Bookworm. ` }";
    // reading the message in the bottle
@@ -2258,19 +2313,43 @@ subroutines {
    :append "{ award_find_dragon ? ` Paranoid Much? ` }";
    :append "{ award_tarzan ? ` Tarzan. ` }";
    :append "{ award_planet_of_apes ? ` Planet of the Apes. ` }";
+   :append "{ award_bad_boys ? ` Bad boys, bad boys, what ya gonna do. ` }";
 
-   :print "\n^c^---";
+   :print "\n^c^-";
+  }
+
+
+  stats : subroutine {
+   :print "^c^<✜ STATISTICS ✜<13>>";
+   :print {( "^n^- You typed " + total_inputs + " words across " + turns() + " turns.")}
+   :print {( "^n^- You used the <LOOK<6>> verb " + total_looks + " times.")}
+   :print {( "^n^- You explored " + total_rooms + " different map locations.")}
+   :print "\n^c^-";
+  }
+
+  endgame_credits : subroutine {
+    :print "^c^<✜ CREDITS ✜<13>>";
+  }
+
+  credits: subroutine {
+    :return;
   }
 
   win_game : subroutine {
-   //:pause "800" ;
-   //:print "^c^2..." ;
-   //:pause "800" ;
-   :print "^c^YOU HAVE WON THE GAME!" ;
-   :print "STATS";
-   :print {( "- You entered " + total_inputs + " words.")}
-   :print {( "- You solved " + side_quests_complete + " side quests.")}
-   :win_game ;
+    :clear_screen;
+    //:pause "800" ;
+    //:print "^c^2..." ;
+    //:pause "800" ;
+    :print "^c^<CONGRATS! YOU HAVE WON!<14>>\n" ;
+    :gosub "achievements";
+    :press_any_key;
+    :gosub "stats";
+    :press_any_key;
+    :gosub "endgame_credits";
+    
+    
+    //:print {( "- You solved " + side_quests_complete + " side quests.")}
+    :win_game ;
   }
 
   help: subroutine {
@@ -2279,7 +2358,7 @@ subroutines {
       :print "- type '<GET<#ec9>> <thing<#8ad>>' to pick up an item.";
       :print "- type '<DROP<#ec9>> <thing<#8ad>>' to drop or place an item.";
       :print "- type '<ACHIEVE<#ec9>>' to see your game achievements.";
-      :print "- type '<STATS<#ec9>>' to see game stats (moves, etc).";
+      //:print "- type '<STATS<#ec9>>' to see game stats (moves, etc).";
       :print "- type <N<#ec9>>, <S<#ec9>>, <E<#ec9>>, <W<#ec9>>, <UP<#ec9>>, <DOWN<#ec9>>, etc to move.";
       : if (tutorial_on == false) {
             :print "- type '<TUTORIAL ON<#ec9>>' to turn tutorial hints on.";
@@ -2287,8 +2366,8 @@ subroutines {
       : if (tutorial_on == true) {
             :print "- type '<TUTORIAL OFF<#ec9>>' to turn tutorial hints off.";
       }
-      //:print "- type '<SETTINGS<#bbb>>' for robot settings.";
-      //:print "- type '<SOUND<#bbb>>' for sound settings.";
+      //:print "- type '<SETTINGS<#ec9>>' for robot settings.";
+      :print "- type '<SOUND<#ec9>>' for sound settings.";
       //:print "- type '<LOAD<#ec9>>' or '<SAVE<#ec9>>' to load or save a game.";
       :print "- type '<QUIT<#ec9>>' to restart a game.";
   }
@@ -2340,8 +2419,58 @@ subroutines {
     }
   }
 
-  track_inputs: subroutine {
+  track_input_stats: subroutine {
     :add var="total_inputs" value="2";
+    :match "examine _" {
+      :add var="total_looks" value="1";
+    }
+    :if (is_first_entered()) {
+      :add var="total_rooms" value="1";
+    }
+  }
+
+  // borrowed from Sentient Beings
+  auto_music: subroutine {
+    : if (is_sound_muted) {
+        :return;
+    }
+    :if (is_at("dream_ship")) {
+      :play_music "music_janus_turning";
+    }
+    :if (is_at("western_heights_dream")) {
+      :play_music "music_underglow";
+    }
+    :if (is_at("quiet_grove")) {
+      :if (!cutsceen_grove_destroy_seen) {
+        :play_music "music_zen_garden";
+      } :else {
+        :play_music "music_i_domine";
+      }
+    }
+    :if (is_at("burnt_grove")) {
+      :play_music "music_helenas_lament";
+    }
+    
+  }
+  update_volume: subroutine {
+    : if (is_sound_muted) {
+        : set_music_vol volume="0";
+    }
+    : else_if (sound_volume == "lowest") {
+        : set_music_vol volume="3";
+    }
+    : else_if (sound_volume == "low") {
+        : set_music_vol volume="7";
+    }
+    : else_if (sound_volume == "normal") {
+        : set_music_vol volume="16";
+    }
+    : else_if (sound_volume == "high") {
+        : set_music_vol volume="40";
+    }
+    : else_if (sound_volume == "highest") {
+        : set_music_vol volume="100";
+    }
   }
 
   wearing: subroutine {
@@ -2364,4 +2493,40 @@ subroutines {
          }
       }
   }
+}
+
+assets {
+  sounds {
+    music_breathe: sound_sample "http://joshgoebel.com/adventure/breathe.mp3";
+    music_faded_dream: sound_sample "http://joshgoebel.com/adventure/faded-dream.mp3";
+    music_fantasy_overture: sound_sample "http://joshgoebel.com/adventure/fantasy-overture.mp3";
+    music_helenas_lament: sound_sample "http://joshgoebel.com/adventure/helenas-lament.mp3";
+    music_i_domine: sound_sample "http://joshgoebel.com/adventure/i-domine.mp3";
+    music_janus_turning: sound_sample "http://joshgoebel.com/adventure/janus-turning.mp3";
+    music_sailing_away: sound_sample "http://joshgoebel.com/adventure/sailing-away.mp3";
+    music_underglow: sound_sample "http://joshgoebel.com/adventure/underglow.mp3";
+    music_zen_garden: sound_sample "http://joshgoebel.com/adventure/zen-garden.mp3";
+  }
+
+  fonts {
+    userfont_antic : ttf {
+      // Extracted from https://fonts.googleapis.com/css2?family=Montserrat&display=swap
+      filepath     = "https://fonts.gstatic.com/s/anticslab/v15/bWt97fPFfRzkCa9Jlp6IacVcXExq9Qs.woff2"
+      snap_vert    = "false"
+      // This is the balance between average vertical pixels and average horz pixels for
+      // use in mapping the font's sizing to the 'columns' property in the theme settings.
+      horz_pixels  = "8"
+      vert_pixels  = "15"
+    }
+  }
+}
+
+
+game_settings {
+  inventory_items_limit_var = inventory_limit
+  auto_pluralize_nouns = true
+
+  precache_strategy = precache_all
+  //auto_ask_sound_permissions = false
+  //scan_entity_ids_for_vocab_items = false
 }
