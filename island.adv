@@ -22,9 +22,9 @@ game_information {
 
 on_startup {
 
-  //:goto "reception";
+  :goto "reception";
 
-  :goto "quiet_grove";
+//  :goto "quiet_grove";
   :pocket "medallion";
   :pocket "spyglass";
   :wear "medallion";
@@ -1866,7 +1866,7 @@ on_command {
 
   :match "eat _" { :print "Are you sure that's edible?"; }
 
-  :match "about _; credits _" {
+  :match "about _;credits _" {
     :gosub "credits";
     :done;
   }
@@ -2398,7 +2398,7 @@ subroutines {
    :append "{ award_planet_of_apes ? ` Planet of the Apes. ` }";
    :append "{ award_bad_boys ? ` Bad boys, bad boys, what ya gonna do. ` }";
 
-   :print "\n^c^-";
+   :print "\n";
   }
 
 
@@ -2416,21 +2416,20 @@ subroutines {
 
   credits: subroutine {
     :print "^c^<✜ CREDITS ✜<13>>";
-      //: print "<Game:<#fc3>> Sentient Beings (version 2.2.1)" ;
-      : print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
-      : print "^n^<Play Testing:<#fc3>> Rhiannon Stanton" ;
-      : print "^n^<Engine:<#fc3>> Adventuron 1.0.0 Beta 73b (thanks, Chris!)" ;
-      : print "^n^<Font:<#fc3>> Antic Slab from <Google Fonts<9>>[https://fonts.google.com/specimen/Antic+Slab]" ;
-      : print "^n^<Music:<#fc3>>" ;
-      : print "^n^<Copyright:<#fc3>> © 2021 Josh Goebel. Not for commercial use. Do not redistribute." ;
-
+    : print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
+    : print "^n^<Testing:<#fc3>> Rhiannon Stanton" ;
+    : print "^n^<Engine:<#fc3>> Adventuron 1.0 (Beta 68j), by Chris Ainsley" ;
+    : print "^n^<Fonts:<#fc3>> Antic Slab from <Google Fonts<#369>>[https://fonts.google.com/specimen/Antic+Slab]" ;
+    : print "^n^<Music:<#fc3>> Shane Iver of <Silverman Sound Studios<#369>>[https://www.silvermansound.com]" ;
+    : print "^n^<Songs:<#fc3>> Fantasy Overture, Helena's Lament, Janus Turning, Underglow, Zen Garden, I Domine";
+    : print "^c^^n^© 2021 Josh Goebel.\nNot for commercial use. Do not redistribute." ;
   }
 
   the_end: subroutine {
     :print "The wizard steps forward, raising his bloodwood staff high...";
     :press_any_key;
-    :print "...then bows low. The rest of the crew follows after him.";
-    :print "\n<We each played our parts...\n...but you were the star.<15>>\n\n";
+    :print "...then bows low. The rest of the crew follows his lead.";
+    :print "\n\"<We each played our parts...\n...but you were the star.<#fff>>\"\n\n";
     :press_any_key;
     :print "^c^<✜ THE END ✜<13>>";
     :win_game ;
