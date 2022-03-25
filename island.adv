@@ -6,7 +6,8 @@
 //}
 
 start_at = washedashore
-template = talp
+//template = talp
+game_type = verb_noun
 
 game_information {
 	game_name = Lost Island
@@ -21,16 +22,12 @@ game_information {
 
 on_startup {
 
-  
+  //:goto "reception";
+
   :goto "quiet_grove";
   :pocket "medallion";
   :pocket "spyglass";
   :wear "medallion";
-
-  // : beep millis = "100"  pitch = "0" ;
-  // : beep millis = "100"  pitch = "2" ;
-  // : beep millis = "100"  pitch = "4" ;
-  // : beep millis = "100"  pitch = "6" ;
 
   :set_theme "main_theme";
   :set_false "tutorial_on";
@@ -60,11 +57,6 @@ on_startup {
   //:create "wolf";
   
 
-
-  // : beep millis = "100"  pitch = "6" ;
-  // : beep millis = "100"  pitch = "4" ;
-  // : beep millis = "100"  pitch = "2" ;
-  // : beep millis = "100"  pitch = "0" ;
 }
 
 
@@ -198,6 +190,7 @@ themes {
       }
       lister_objects {
          experimental_auto_group_singular_objects = true
+         list_type = "single_line_no_article"
       }
 
       lister_inventory {
@@ -278,10 +271,74 @@ themes {
    }
 }
 
-
+on_describe {
+  :if (is_at("reception")) { 
+    :tutorial "When ready to depart, type <THE END<6>> at any time.";
+  }
+}
 
 locations {
   placeholder: location "dummy location for fake connections";
+  reception: location "The small cast of our grand narrative stands before you." header ="Meet and Greet" {
+    on_command {
+      :if (is_present("r_stranger")) {
+        :match "talk stranger" {
+          :append "You approach the stranger.";
+          :examine;
+          :print "<As you stare, smoke rises, there is a sudden bright flash of light... he is gone.<13>>";
+          :print "...in his place a wizard stands tall and straight.";
+          :swap o1="r_stranger" o2="r_wizard";
+        }
+        :match "look stranger" {
+          :examine;
+          :print "<As you stare, smoke rises, there is a sudden bright flash of light... he is gone.<13>>";
+          :print "...in his place a wizard stands tall and proud.";
+          :swap o1="r_stranger" o2="r_wizard";
+        }
+      }
+      :match "shake hand; shake hands" {
+        :print "You walk about shaking hands with all.";
+        :print "As you approach the wolf he raises his paw for you.";
+        :print "The seagull merely looks at you quizically.";
+      }
+      :match "the end" {
+        :gosub "the_end";
+      }
+      :match "kiss wolf" {
+        :print "You lean in for a kiss...";
+        :press_any_key;
+        :print "... and the wolf hapilly licks your face and slobbers all over you.";
+      }
+      :match "pet wolf" {
+        :print "You pet the wolf affectionately and it whines happily.";
+      }
+      :match "hug wolf; snuggle wolf; cuddle wolf" {
+        :print "You squeeze the wolf tight.  It's fur is incredibly warm and soft.";
+        :print "You let go right as things were about to start getting awkward.";
+      }
+      :match "talk wizard" {
+        :print "Very pleased to make your acquaintance.";
+        :print "Sorry about my 'pitiful pet' comment earlier, merely playing my role to it's fullest, ya know.";
+      }
+      :match "talk firstmate" {
+        :print "Ahoy, mate.";
+      }
+      :match "talk captain" {
+        :print "It was my honor to be your captain thru the storm.";
+        :print "Remember... I told ya \"We'll be fine\", didn't I?";
+        :print "<The captain winks.<13>>";
+      }
+      :match "ask tree" {
+        :print "<questions. done.<14>>"; :done; 
+      }
+      :match "talk tree" {
+        :print "<greet you. pleased.<14>>"; :done; 
+      }
+      :match "talk wolf; talk seagull" {
+        :examine;
+      }
+    }
+  }
 
   // beach
   beach: location "A beach of beautiful white sand extends along the shoreline.  Further back looks like jungle." header="Southern Shore";
@@ -385,7 +442,16 @@ locations {
   jungle_entrance: location "{jungle_room_description}" header="Jungle";
   jungle_w: location "{jungle_room_description}" header ="Jungle";
   // TODO: better description
-  south_of_grove: location "To the north is the sacred grove.  You see smoke in the distance." header ="Outside the Grove";
+  south_of_grove: location "Jungle surrounds you.  To the north is the sacred grove." header ="Jungle, Outside Grove" {
+    on_command {
+      :match "north _" {
+        :if (!cutsceen_grove_destroy_seen) {
+          :goto "quiet_grove";
+          :done;
+        }
+      }
+    }
+  }
   jungle_ww: location "{jungle_room_description}" header ="Jungle";
   jungle_e: location "{jungle_room_description}" header ="Jungle";
   jungle_ee: location "{jungle_room_description}" header ="Jungle";
@@ -580,6 +646,7 @@ locations {
         :if(is_present("broken_staff")) {
           //:examine;
           :gosub "cutsceen_wizard_staff";
+          :gosub "win_game";
         }
       }
     }
@@ -699,6 +766,17 @@ locations {
 
 
 objects {
+  // reception
+  r_seagull: scenery "seagull" at="reception" msg="The seagull slightly dips it's head as if taking a bow.";
+  r_captain: scenery "<captain<#c6c>>" at="reception" msg="A patch covers one eye and a parrot rests on his shoulder. Yes, the captain is a bit stereotypical, but you'd never say that to his face.";
+  r_firstmate: scenery "<firstmate<#c6c>>" at="reception" msg="A bit of blond sandy hair escape from under a red bandana. His smile may be missing a few teeth, but is as still friedly as ever.";
+  r_stranger: scenery "<stranger<#c6c>>" at="reception" msg="A frail old man wearing in a dingy cloak.  He lean's on a gnarled walking stick, ad if it were a cane.";
+  r_wizard: scenery "<wizard<#c6c>>" msg="He wears a black cape and grips a bloodwood staff.  He smiles and makes a very deep bow.";
+  r_wolf: scenery "<wolf<#c6c>>" at="reception" msg="A dire wolf with a light grey mane and deep <golden<#fc3>> eyes.  It yips at you and wags it's tail in a friendly fashion.";
+  r_tree: scenery "ancient tree" at="reception" msg="It towers above you, with smooth white bark and light crimson blossoms.  Every so slowly the limbs drop a bit and then rise again.";
+
+
+
   // village
   bucket: object "bucket" at="village_square" msg="Likely used for drawing the water up from the well.";
   well: scenery "well" at="village_square" msg="It looks like hasn't been used in some time. Seems deep.";
@@ -1609,7 +1687,7 @@ on_command {
       :match "south -" {
         :if (is_carried("acorn")) {
           :print "You imagine you see a dark figure out of the corner of your eye...";
-          :goto "jungle_ww";
+          :goto "south_of_grove";
         }
       }
    }
@@ -1837,10 +1915,12 @@ on_tick {
   :if (is_at("quiet_grove")) { :set_true "has_visited_grove"; }
 
   // somethings wrong in the grove
-  :if (is_at("jungle_ww") && is_carried("acorn")) {
-    :if (!cutsceen_grove_destroy_seen) {
-      :destroy "wolf"; // wolf is nowhere
-      :print "<You hear yelling and a loud commotion in the grove to the north.<13>>";
+  :if (is_at("south_of_grove") && is_carried("acorn")) {
+    :destroy "wolf"; // wolf is nowhere
+    :if (cutsceen_grove_destroy_seen) {
+      :print "<Smoke rises from the north.<13>>";
+    } :else {
+      :print "<You hear yelling and a loud commotion to the north.<13>>";
     }
   }
 
@@ -2270,9 +2350,8 @@ subroutines {
     :print "Blood red fire rains down, engulfing the massive tree. The ground shakes and you are thrown backwards into the jungle.";
 
     :press_any_key;
-    :print "The last thing you remember is a vicious growling, as if all the beasts of the earth spoke with a single voice...";
+    :print "The last thing you remember is a vicious growling, as if all the beasts of the earth cried out with a singular voice...";
     :print "...and then it all fades to black...";
-    //:print "The ground shakes again and you hear a vicious growl as you lose consciousness.";
     :press_any_key;
 
     :goto "south_of_grove";
@@ -2329,10 +2408,21 @@ subroutines {
 
   endgame_credits : subroutine {
     :print "^c^<✜ CREDITS ✜<13>>";
+
   }
 
   credits: subroutine {
     :return;
+  }
+
+  the_end: subroutine {
+    :print "The wizard steps forward, raising his bloodwood staff high...";
+    :press_any_key;
+    :print "...then bows low. The rest of the crew follows after him.";
+    :print "\n<We each played our parts...\n...but you were the star.<15>>\n\n";
+    :press_any_key;
+    :print "^c^<✜ THE END ✜<13>>";
+    :win_game ;
   }
 
   win_game : subroutine {
@@ -2347,9 +2437,9 @@ subroutines {
     :press_any_key;
     :gosub "endgame_credits";
     
-    
+    :goto "reception";
     //:print {( "- You solved " + side_quests_complete + " side quests.")}
-    :win_game ;
+    //:win_game ;
   }
 
   help: subroutine {
