@@ -640,11 +640,10 @@ locations {
     //  }
     //}
   }
-  burnt_grove: location "You stand in a burnt grove filled full of only ashes and smoke." header ="Burnt Grove" {
+  burnt_grove: location "You stand in a burnt grove filled full of nothing but ashes and accrid smoke." header ="Burnt Grove" {
     on_command {
       :match "look staff" {
         :if(is_present("broken_staff")) {
-          //:examine;
           :gosub "cutsceen_wizard_staff";
           :gosub "win_game";
         }
@@ -1853,6 +1852,10 @@ on_command {
     :done;
   }
 
+  :match "the end" {
+    :print "A bit premature?";
+  }
+
   :match "touch _" {
     :if (is_present(s1())) {
         :print "You feel nothing unexpected.";
@@ -1863,8 +1866,9 @@ on_command {
 
   :match "eat _" { :print "Are you sure that's edible?"; }
 
-  :match "about -; credits -" {
+  :match "about _; credits _" {
     :gosub "credits";
+    :done;
   }
 
 
@@ -2407,12 +2411,19 @@ subroutines {
   }
 
   endgame_credits : subroutine {
-    :print "^c^<✜ CREDITS ✜<13>>";
-
+    :gosub "credits";
   }
 
   credits: subroutine {
-    :return;
+    :print "^c^<✜ CREDITS ✜<13>>";
+      //: print "<Game:<#fc3>> Sentient Beings (version 2.2.1)" ;
+      : print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
+      : print "^n^<Play Testing:<#fc3>> Rhiannon Stanton" ;
+      : print "^n^<Engine:<#fc3>> Adventuron 1.0.0 Beta 73b (thanks, Chris!)" ;
+      : print "^n^<Font:<#fc3>> Antic Slab from <Google Fonts<9>>[https://fonts.google.com/specimen/Antic+Slab]" ;
+      : print "^n^<Music:<#fc3>>" ;
+      : print "^n^<Copyright:<#fc3>> © 2021 Josh Goebel. Not for commercial use. Do not redistribute." ;
+
   }
 
   the_end: subroutine {
