@@ -1254,8 +1254,8 @@ on_command {
         :set_true "is_reading";
         :while (is_reading) {
           :clear_screen;
-          :print "^n^<Elder's Hut - Tome<5>>";
-          :print "You sit down in a small chair and thumb thru the pages of the large tome.";
+          :print "^n^<Elder's Hut - reading<5>>";
+          :print "You sit down on the bed and slowly thumb thru the pages.";
           :add_choice "a final stand" {
             :print "I depart now to face the wizard with what little courage and magics I posess.";
             :print "...I fear both shall be insufficient.";
@@ -1279,7 +1279,7 @@ on_command {
             :print "All of this was long ago foretold... also that one day a hero would come - to right the old wrongs.";
             :print "Seek the wolf... and perhaps then the tree would offer help...";
           }
-          :add_choice "nevermind (done reading)" { 
+          :add_choice "stop (I'm done reading)" { 
             :redescribe;
             :set_false "is_reading";
             :done; 
@@ -2520,7 +2520,7 @@ subroutines {
 
   help: subroutine {
       :print "- type '<LOOK<#ec9>>' or '<LOOK<#ec9>> <thing<#8ad>>' to examine clues.";
-      :print "- type '<I<#ec9>>' to see what you are holding (and wearing).";
+      :print "- type '<I<#ec9>>' or '<INVENTORY<#ec9>>' to see what you hold (and wear).";
       :print "- type '<GET<#ec9>> <thing<#8ad>>' to pick up an item.";
       :print "- type '<DROP<#ec9>> <thing<#8ad>>' to drop or place an item.";
       :print "- type '<ACHIEVE<#ec9>>' to see your game achievements.";
@@ -2550,14 +2550,17 @@ subroutines {
     }
     :if (!tutorial_on) {
       :clear_screen;
-      :tutorial "This game uses a two word parser; commands are never more than two words:\n - most commonly verb/noun pairings such as <EAT FOOD<6>>, etc.";
+      :print "You are skipping the tutorial. A few final things:";
+      :tutorial "- this game uses a simple verb/noun parser.";
+      :tutorial "- commands are never more than two words: <NORTH<6>>, <EAT FOOD<6>>, etc.";
+      :tutorial "- during the game you can type <HELP<6>> at any time for basic help." ;
       :press_any_key;
     }
   }
 
    ask_fantasy_violence: subroutine {
    :print "\n\n";
-   :tutorial "This game may include some light (direct or implied) fantasy violence.";
+   :tutorial "This game may include some fantasy violence (both direct and implied).";
    :ask_bool {
       var = "fantasy_violence_ok"
       question = Do you still wish to continue?
