@@ -37,7 +37,8 @@ on_startup {
   :gosub "ask_fantasy_violence";
   :gosub "ask_tutorial";
   :gosub "bootup";
-  :gosub "main_music_theme";  
+
+  :gosub "auto_music";  
 
   //:goto "western_heights";
   //:pocket "spyglass";
@@ -53,9 +54,11 @@ on_startup {
   //:goto "quiet_grove";
 
   //:goto "cliffs_e_clearing";
-  :pocket "red_marble";
-  :pocket "blue_marble";
-
+  //:pocket "red_marble";
+  //:pocket "blue_marble";
+  //:pocket "msg_bottle";
+  :goto "village_hut";
+  :pocket "oar";
   //:create "wolf";
   
 
@@ -110,6 +113,7 @@ booleans {
   is_wolf_awake: boolean "false";
   is_candle_lit: boolean "false";
   is_flashback: boolean "false";
+  is_reading: boolean "false";
 
   // has seen
   has_won_game: boolean "false";
@@ -139,8 +143,9 @@ booleans {
 integers {
    tmp_int: integer "0";
 
-   inventory_limit : integer "15" ;
-   max_achievements :integer "20";
+   inventory_limit: integer "15" ;
+   max_achievements: integer "20";
+   number_of_stones: integer "89";
 
    until_wave: integer "31";
    dream_counter : integer "0";
@@ -195,6 +200,7 @@ themes {
           tutorial_message_prefix = ""
          // on_get = "You got it!"
 
+         question_prompt_char = "choice?"
          object_list_end_text = ""
          exit_list_end_text = ""
          inventory_list_header        = "CARRYING: "
@@ -404,7 +410,16 @@ locations {
   };
 
   // village
-  village_square: location "The village surrounds you on all sides.  It's far too quiet, like a ghost town." header="Village, Square";
+  village_square: location "The village surrounds you on all sides.  It's far too quiet, like a ghost town." header="Village, Square" {
+    on_command {
+      :match "get fruit; get fabric" {
+        :print "It's too old and decayed to be of any use to you.";
+      }
+      :match "drop stone; drop pebble; drop rock" {
+        :print "You find a small pebble nearby and drop it into the well.  You hear a splash.";
+      }
+    }
+  }
   village_n: location "To the north stands a large hut." header="Village";
   village_s: location "Small huts surround both sides of the street." header="Village";
   village_e: location "Small huts surround both sides of the street." header="Village";
@@ -590,7 +605,7 @@ locations {
   
   cliffs_e_clearing: location "You stand in a large clearing, bordered by dense jungle to the west. A huge boulder clings resolutely to the edge of the cliff." header="Eastern Cliffs,  Clearing" {
     on_command {
-        :match "sit stone" {
+        :match "sit stone; sit stones" {
           :print "You sit down for a moment and ponder the life choices that led you to this point...";
         }
         :match "push boulder" {
@@ -623,7 +638,7 @@ locations {
   }
   burnt_grove: location "You stand in a burnt grove filled full of nothing but ashes and accrid smoke." header ="Burnt Grove" {
     on_command {
-      :match "look staff" {
+      :match "look staff; get staff" {
         :if(is_present("broken_staff")) {
           :gosub "cutsceen_wizard_staff";
           :gosub "win_game";
@@ -671,6 +686,10 @@ locations {
         :match "look wave" {
           :print "It must be at least as tall as 4 of your own vessel stacked mast to mast. A huge wall of angry water.";
         }
+        :match "piss pants; pee pants; wet pants; pee yourself; wet yourself" {
+          :print "The warmth running down your leg briefly wards off the chill of the night air.";
+          :print "The firstmate looks at you a bit awkwardly.";
+        }
         :match "give speech" {
           :print "You clear your throat.";
           :press_any_key;
@@ -684,7 +703,7 @@ locations {
           :print "(too far away without yelling)";
           :print "They stand at the railing, staring into the ocean, seemingly unbothered by the violence of the storm.";
         }
-        :match "yell stranger; scream stranger" {
+        :match "yell stranger; scream stranger; shout stranger" {
           :print "You yell, casting your voice towards the stranger.";
           :press_any_key;
           :print "Slowly they turn and you see eyes... eyes...";
@@ -756,7 +775,7 @@ objects {
   r_ape: scenery "ape" at="reception" msg="The ape scratches it's head and looks back at you.";
 
   // VILLAGE
-  bucket: object "a bucket" at="village_square" msg="Likely used for drawing the water up from the well.";
+  //bucket: object "a bucket" at="village_square" msg="Likely used for drawing the water up from the well.";
   well: scenery "a well" at="village_square" msg="It looks like hasn't been used in some time. Seems deep.";
   vendor_booths: scenery "vendor booths" at="village_square" msg="You see the remains of fruit that rotted long ago and faded fabrics.";
   // elder hut
@@ -767,7 +786,7 @@ objects {
 
   // western_heights_dream
   wounded_wolf: scenery "<wolf<#c6c>>" at="western_heights_dream" msg="The large creature is bound upon the altar and appears injured. It looks towards you, or is that merely your imagination?";
-  evil_wizard: scenery "<wizard<#c6c>>" at="western_heights_dream" msg="He wears a black cape and holds a bloodwood staff. He is slowing speaking the words of some sort of incantation or spell.";
+  evil_wizard: scenery "<wizard<#c6c>>" at="western_heights_dream" msg="He wears a black cape and holds a bloodwood staff. He is slowly speaking the words of some sort of incantation or spell.";
   bloodwood_staff: scenery "a bloodwood staff" at="western_heights_dream" msg="The staff is at least 7 feet tall and a redish black color." conspicuous="false";
   wizard_cape: scenery "a cape" at="western_heights_dream" msg="The wizard's black cape is blowing about madly in the wind." conspicuous="false";
   moonstone_altar: scenery "moonstone altar" at="western_heights_dream" msg="A massive moonstone altar.  It's glowing a bright blueish yellow.";
@@ -812,7 +831,7 @@ objects {
   // beach
   pool :scenery "a pool" at="beach_ww_rocky" msg="A small pool of crystal clear water. You see your reflection - not one of your better days.";
   knife: object "a knife" at = "waters_edge" msg="It appears quite sharp.";
-  oar: object "an oar" at ="beach_w";
+  oar: object "an oar" at ="beach_w" msg="A long rowboat oar; used for paddling.";
   broken_oar: object "a broken oar"  msg="Broken in half, useless.";
   coconut_trees: object "coconut trees" at="beach_w" msg="Coconuts are delicious. But they are up to high.";
   coconut: object "a coconut" msg="A delicious coconut.";
@@ -851,11 +870,11 @@ objects {
 
   // jungle
   wolf_statue: scenery  "statue" at="cliffs_e_clearing" 
-    msg="In the middle of the clearing is a statue of a HUGE wolf, every bit as tall as you.  Strangely, it appears to be missing its eyes.";
+    msg="In the middle of the clearing is a statue of a massive wolf, every bit as tall as you.  Strangely, it appears to be missing its eyes.";
   wolf_statue2: scenery  "wolf statue" noun="statue"
-    msg="In the middle of the clearing is a statue of a HUGE wolf, every bit as tall as you.  Strangely, it appears to be missing its eyes.";
+    msg="In the middle of the clearing is a statue of a massive wolf, every bit as tall as you.  Strangely, it appears to be missing its eyes.";
   wolf_statue3: scenery  "wolf statue" noun="statue"
-    msg="In the middle of the clearing is a statue of a HUGE wolf, every bit as tall as you. Its eyes are a dull gold color.";
+    msg="In the middle of the clearing is a statue of a massive wolf, every bit as tall as you. Its eyes are a dull gold color.";
   wolf_statue4: scenery  "crumbled statue" noun="statue"
     msg="The crumbled remains of a statue litter the middle of the clearing.";
   circle_stones: scenery  "circle of stones" msg="Two dozen large stones each the size of your head form a circle around the statue." at="cliffs_e_clearing";
@@ -1232,34 +1251,42 @@ on_command {
          :print "You cannot.  Some magic ties it to this place.";
       }
       :match "read tome" {
-         : add_choice "a last stand" {
-            :print "I prepare now to face the wizard with what little courage and magics I posess.";
+        :set_true "is_reading";
+        :while (is_reading) {
+          :clear_screen;
+          :print "^n^<Elder's Hut - Tome<5>>";
+          :print "You sit down in a small chair and thumb thru the pages of the large tome.";
+          :add_choice "a final stand" {
+            :print "I depart now to face the wizard with what little courage and magics I posess.";
             :print "...I fear both shall be insufficient.";
-         }
-         : add_choice "the wolf" {
+          }
+          :add_choice "the wolf" {
             :print "The wolf is as old as time; protector of our people, guardian of the island and sacred grove.";
-         }
-         : add_choice "the wizard" {
-            :print "This dark figure has many names and his tales would fill many books.";
+          }
+          :add_choice "the wizard" {
+            :print "This dark figure has held many names and his tales would fill many books.";
             :print "The wizard tricked the wolf, gauged it's eyes (stealing it's powers), and then placed it into a dark, dreamless slumber.";
-         }
-         :add_choice "the sacred grove" {
+          }
+          :add_choice "a sacred grove" {
             :print "There stands a wise, sacred tree in the center of the island that we worship.";
-            :print "Surely the way to the grove will remain elusive to the wizard.";
-         }
-         : add_choice "my people" {
+            :print "Surely the way to the grove will remain elusive to the wizard. It must.";
+          }
+          :add_choice "my people" {
             :print "I do not know what has become of my people.";
             :print "I fear I will never know.";
-         }
-         : add_choice "a hero promised" {
-            :print "Yet all of this was long ago foretold... also that one day a hero would come - to right the old wrongs.";
-            :print "Seek the wolf... perhaps then the tree would offer help...";
-         }
-         : add_choice "nevermind" { 
+          }
+          :add_choice "a hero fortold" {
+            :print "All of this was long ago foretold... also that one day a hero would come - to right the old wrongs.";
+            :print "Seek the wolf... and perhaps then the tree would offer help...";
+          }
+          :add_choice "nevermind (done reading)" { 
             :redescribe;
+            :set_false "is_reading";
             :done; 
-         }
-         : choose "read which section:";
+          }
+          :choose "<a few stand out:<#666>>";
+          :press_any_key;
+        }
       }
    }
 
@@ -1319,14 +1346,15 @@ on_command {
 
    // THE SEAGULL
 
-   :if (is_present("dead_seagull")) {
+   //:if (is_present("dead_seagull")) {
       :match "eat bird; cook bird; roast bird" {
          :print "You tear into the small, but delicious meal.";
          :set_string var="award_name" text="Perseverance";
+         :gosub "give_award";
          :destroy "dead_seagull";
          :done;
       }
-   }
+   //}
 
    :if (is_present("seagull")) {
       :match "eat bird; cook bird; roast bird" {
@@ -1538,6 +1566,8 @@ on_command {
 
         :if (oar_hit_chest_count > 3) {
           :swap o1="oar" o2="broken_oar";
+          :drop "broken_oar";
+          :press_any_key;
           :redescribe;
         }
       } :else {
@@ -1593,7 +1623,7 @@ on_command {
    :if (is_at("quiet_grove")) {
 
       :match "talk tree; speak tree" {
-         :print "You have a feeling it's already listening.\nWhat would <ask<8>> of it?";
+         :print "You have a feeling it's already listening.\nWhat would you <ask<6>> of it?";
       }
       :match "touch tree" {
         :print "You feel briefly feel connected to a life force impossible to describe or imagine.";
@@ -1696,7 +1726,7 @@ on_command {
    // JUST A SHADOW
 
   :if (is_present("shadow_bear")) {
-    :match "look bear" {
+    :match "look bear; touch bear; talk bear; attack bear; hit bear; stab bear" {
         :print "Nope, just a shadow.";
         :destroy "shadow_bear";
     }
@@ -1739,11 +1769,17 @@ on_command {
             :print "You examine one stone.  It's a rock.";
          }
       }
+      :match "count stones" {
+        :print "You slowly and deliberately count each stone. There are exactly {number_of_stones}.";
+        :set_string var="award_name" text="OCD";
+        :gosub "give_award";
+      }
       :match "get stones" {
          :print "No way you're going to carry them all.";
       }
       :match "get stone" {
         :if (has_not_created("stone")) {
+          :add var="number_of_stones" value="-1";
           :print "You pocket one of the stones.";
           :pocket "stone";
         }
@@ -1752,7 +1788,7 @@ on_command {
 
     // MESSAGE IN A BOTTLE
 
-   : if (is_present "msg_bottle") {
+    :if (is_present "msg_bottle") {
       :match "throw bottle; toss bottle" {
          :print "You throw the bottle far out to sea.";
          :destroy "msg_bottle";
@@ -1763,13 +1799,19 @@ on_command {
           :tutorial "Did you perhaps mean <read message<6>>?";
         }
       }
-      :match "read message; read note" {
+      :match "smash bottle; break bottle" {
+        :print "Why so violent? Did you consider just opening it?";
+      }
+      :match "look message; read message; read note; open bottle" {
+        :if (verb_is("open")) {
+          :print "You open the bottle and read the note.";
+        }
         :print "It reads:\n  \"Trapped on an island. Send help.\"";
         :set_string var="award_name" text="Message In a Bottle";
         :gosub "give_award";
         :press_any_key;
       }
-   }
+    }
 
    : if (is_present "seashell") {
       :match "listen seashell" {
@@ -1804,6 +1846,10 @@ on_command {
    // zones
 
    :if (is_at("beach_zone")) {
+      :match "drink water" {
+        :print "What water?";
+        :print "You know better thank to drink salt water.";
+      }
       :match "look sand" {
          :print "Your average everyday tropical island sand, and plenty of it.";
       }
@@ -1864,20 +1910,25 @@ on_command {
 
   // TUTORIAL
 
-  :if (is_at("beach")) {
-    :if (!tut_look_sand) {
-        :match "south _" {
-        :tutorial "I'd suggest you finish the tutorial before exploring further. It'll take only a few minutes.";
-        :tutorial "Otherwise, type <TUTORIAL OFF<6>> and I'll get our of your way.";
-        :press_any_key;
-        :redescribe;
+  :if (tutorial_on) {
+    :if (is_at("beach")) {
+      :if (!tut_look_sand) {
+          :match "south _" {
+          :tutorial "I'd suggest you finish the tutorial before exploring further. It'll take only a few minutes.";
+          :tutorial "Otherwise, type <TUTORIAL OFF<6>> and I'll get our of your way.";
+          :press_any_key;
+          :redescribe;
+          :done;
+        }
       }
-    } :else_if (tutorial_progress<4) {
+      :if (tutorial_progress<4) {
         :match "north _; east _; west _" {
-        :tutorial "I'd suggest you finish the tutorial before exploring further. It'll take only a few minutes.";
-        :tutorial "Otherwise, type <TUTORIAL OFF<6>> and I'll get our of your way.";
-        :press_any_key;
-        :redescribe;
+          :tutorial "I'd suggest you finish the tutorial before exploring further. It'll take only a few minutes.";
+          :tutorial "Otherwise, type <TUTORIAL OFF<6>> and I'll get our of your way.";
+          :press_any_key;
+          :redescribe;
+          :done;
+        }
       }
     }
   }
@@ -1897,6 +1948,8 @@ on_command {
 ######################################
 
 on_tick {
+  :gosub "auto_music";
+
   // DEBUG
   :if (is_debug) {
     //:print {( "linger" + linger() )};
@@ -2103,7 +2156,7 @@ on_tick {
                :tutorial "A knife seems useful.  \nType <get knife<6>> to pick it up.";
             }
          }
-         :match "look seashell" {
+         :match "look seashell; listen seashell" {
           :if (!is_carried("seashell")) {
             :tutorial "Go ahead and pick it up with <take seashell<6>>.";
           }
@@ -2118,8 +2171,8 @@ on_tick {
             :tutorial "I believe you have the hang of it!";
             :tutorial "That shipwreck to the south sure looks intriguing. (<look wreck<6>>)";
          }
-         :match "look shipwreck" {
-          :tutorial "I'll be much quietier from going forward, good luck!";
+         :match "look shipwreck; look south" {
+          :tutorial "I'll be much quietier from this point, good luck!";
           :tutorial "Type <HELP<6>> at any time to see help with the basics.";
           :increment "tutorial_progress"; // to 4
          }
@@ -2234,10 +2287,10 @@ on_tick {
   :if (is_present("burnt_tree")) {
     :match "look tree; touch tree" {
       :gosub "cutsceen_plant_acorn";
+      :done;
     }
   }
 
-  :gosub "auto_music";
 } // end of global on_tick // 
 
 
@@ -2568,23 +2621,25 @@ subroutines {
     : if (is_sound_muted) {
         :return;
     }
-    :if (is_at("dream_ship")) {
+    :else_if (is_at("dream_ship")) {
       :play_music "music_janus_turning";
     }
-    :if (is_at("western_heights_dream")) {
+    :else_if (is_at("western_heights_dream")) {
       :play_music "music_underglow";
     }
-    :if (is_at("quiet_grove")) {
+    :else_if (is_at("quiet_grove")) {
       :if (!cutsceen_grove_destroy_seen) {
         :play_music "music_zen_garden";
       } :else {
         :play_music "music_i_domine";
       }
     }
-    :if (is_at("burnt_grove")) {
+    :else_if (is_at("burnt_grove")) {
       :play_music "music_helenas_lament";
     }
-    
+    :else {
+      :play_music "music_fantasy_overture";
+    }
   }
   update_volume: subroutine {
     : if (is_sound_muted) {
@@ -2608,7 +2663,7 @@ subroutines {
   }
 
   give_award: subroutine {
-    :if (collection_contains { collection="awards" value -> (item()) }) {
+    :if (collection_contains { collection="awards" value -> (award_name) }) {
       :return;
     }
 
