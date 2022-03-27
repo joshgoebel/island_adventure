@@ -9,16 +9,21 @@ start_at = washedashore
 //template = talp
 game_type = verb_noun
 
+__game_version = 0.8.1
+__game_name = Lost Island
+
 game_information {
-	game_name = Lost Island
+	game_name = ${{__game_name}}
  	game_shortname = LostIsland
 	written_by = Josh Goebel
  	uuid = cf74ec25-337d-454f-9a0c-273d4c6bb604
 	year_of_release = 2022
-	game_version = 0.5.0
+	game_version = $${__game_version}
 	copyright_message = Copyright (C) 2022 Josh Goebel. Not for commercial use. Do not redistribute.
 	short_synopsis = Discover the secrets of the lost island
 }
+
+loading_screen = loading_graphic
 
 on_startup {
 
@@ -57,8 +62,8 @@ on_startup {
   //:pocket "red_marble";
   //:pocket "blue_marble";
   //:pocket "msg_bottle";
-  :goto "village_hut";
-  :pocket "oar";
+  //:goto "village_hut";
+  //:pocket "oar";
   //:create "wolf";
   
 
@@ -154,6 +159,7 @@ integers {
    lost_jungle_counter: integer "0";
    oar_hit_chest_count: integer "0";
    tutorial_progress: integer "0";
+   wood_count: integer "0";
 
    side_quests_complete: integer "0";
    kill_chance: integer "0";
@@ -270,8 +276,6 @@ themes {
       }
    }
 }
-
-// TODO: fantasy violence warning?
 
 on_describe {
   :if (is_at("reception")) { 
@@ -896,13 +900,16 @@ objects {
 }
 
 vocabulary {
-
-   // Here we assocated new words with the already supported english system vocab
    : verb / aliases = [exit, leave]
-   : verb / aliases = [look, l ]
-   : verb / aliases = [spy, spyglass ]
+   : verb / aliases = [look, l]
+   : verb / aliases = [spy, spyglass]
    : verb / aliases = [touch, feel]
    : verb / aliases = [talk, speak, greet]
+   : verb / aliases = [get, take, grab, pickup]
+   : verb / aliases = [yell, shout, scream]
+   : verb / aliases = [wait, z]
+
+   // nouns
    : noun / aliases = [bird, seagull, gull]
    : noun / aliases = [log, logbook, tome]
    : noun / aliases = [tree, trees]
@@ -913,7 +920,8 @@ vocabulary {
    : noun / aliases = [marble, marbles, eye, eyes]
    : noun / aliases = [statue, wolf]
    : noun / aliases = [flowers,flower]
-   : noun / aliases = [shipwreck,wreck]
+   : noun / aliases = [shipwreck, wreck, ship]
+
   // directions
    : noun / aliases = [north, n]
    : noun / aliases = [south, s]
@@ -1188,35 +1196,41 @@ on_command {
 
   :if (is_carried("matchbook")) {
     :if (is_at("western_heights")) {
-        :match "light fire; set fire" {
-          :if (!is_beside("chopped_driftwood")) {
-            :print "You need more wood.";
+        :match "light fire; set fire; start fire; make fire" {
+          :set_integer var ="wood_count" value="0";
+          :if (is_beside("chopped_driftwood")) { :add var="wood_count" value="1"; }
+          :if (is_beside("chopped_oak")) { :add var="wood_count" value="1"; }
+          :if (is_beside("chopped_darkwood")) { :add var="wood_count" value="1"; }
+          :if (is_beside("oar")) { :add var="wood_count" value="1"; }
+          :if (is_beside("broken_oar")) { :add var="wood_count" value="1"; }
+          :if (wood_count < 2) {
+            :print "You'll need at least two sources of wood.";
             :done;
           }
-          :if (!is_beside("chopped_oak")) {
-            :print "You need more wood.";
-            :done;
-          }
-          :if (!is_beside("chopped_darkwood")) {
-            :print "You need more wood.";
-            :done;
-          }
-          :if (!is_beside("love_letters") && !is_beside("charts"))
+          :if (!is_beside("love_letters") && !is_beside("charts") && !is_beside("moby_book"))
           {  
             :print "You'll need some sort of paper to get the fire started.";
             :done;
           }
-          :destroy "chopped_driftwood";
-          :destroy "chopped_oak";
-          :swap o1="chopped_darkwood" o2="signal_fire";
+
+          :if (is_beside("chopped_driftwood")) { :destroy "chopped_driftwood"; }
+          :if (is_beside("chopped_oak")) { :destroy "chopped_oak"; }
+          :if (is_beside("chopped_darkwood")) { :destroy "chopped_darkwood"; }
+          :if (is_beside("oar")) { :destroy "oar"; }
+          :if (is_beside("broken_oar")) { :destroy "broken_oar"; }
+
+          :create "signal_fire";
           :if (is_beside("love_letters")) { :destroy "love_letters"; }
-          :if (is_beside("charts")) { :destroy "charts"; }
-          :gosub "win_game";
+          :else_if (is_beside("charts")) { :destroy "charts"; }
+          :else_if (is_beside("moby_book")) { :destroy "moby_book"; }
+          
+          :set_string var="award_name" text="Signal Fire.";
+          :gosub "give_award";
           :done;
         }  
     }
 
-    :match "light fire; set fire" {
+    :match "light fire; set fire; start fire; make fire" {
       :print "Why would you do that here?";
     }
   }
@@ -1231,7 +1245,7 @@ on_command {
 
    // MOBY DICK
 
-  :if (is_present("book") || is_present("moby_book") || true) {
+  :if (is_present("book") || is_present("moby_book")) {
     :match "read book" {
         :print "Great idea.";
         :print "You'll put that on your list; just as soon as you get off this island.";
@@ -1346,7 +1360,7 @@ on_command {
 
    // THE SEAGULL
 
-   //:if (is_present("dead_seagull")) {
+   :if (is_present("dead_seagull")) {
       :match "eat bird; cook bird; roast bird" {
          :print "You tear into the small, but delicious meal.";
          :set_string var="award_name" text="Perseverance";
@@ -1354,7 +1368,7 @@ on_command {
          :destroy "dead_seagull";
          :done;
       }
-   //}
+   }
 
    :if (is_present("seagull")) {
       :match "eat bird; cook bird; roast bird" {
@@ -2422,52 +2436,18 @@ subroutines {
 
   achievements : subroutine {
     :print "^c^<✜ ACHIEVEMENTS ✜<13>>";
-
+    
     :if (collection_count("awards") == 0) {
-      :print "No achievements yet.";
+      :append "No achievements yet.";
       :return;
     }
 
     :collection_iterate "awards" {
-      :append {(item() + ".")}
+      :append {(item() + ". ")}
     }
-
-  //:set_true "award_bookworm";
-  //:set_true "award_god_fearing";
-  //:set_true "award_message_in_a_bottle";
-  //:set_true "award_seagull";
-  //:set_true "award_acorn";
-  //:set_true "award_signal_fire";
-  //:set_true "award_whoami";
-  //:set_true "award_treasure_island";
-  //:set_true "award_find_dragon";
-  //:set_true "award_tarzan";
-  //:set_true "award_planet_of_apes";
-  //:set_true "award_bad_boys";
-  // 
-  // :set_true "tmp_bool";
-  // // trying to read everything
-  // :append "{ award_bookworm ? ` Bookworm. ` }";
-  // // reading the message in the bottle
-  // :append "{ award_message_in_a_bottle ? ` Message in a bottle. ` }";
-  // // praying during the storm
-  // :append "{ award_god_fearing ? ` God-fearing. ` }";
-  // // eat the darn seagull
-  // :append "{ award_seagull ? ` Perseverance. ` }";
-  // // plant the acorn
-  // :append "{ award_acorn ? ` Kings or Pawns. ` }";
-  // // light the signal fire
-  // :append "{ award_signal_fire ? ` Smoke Signal. ` }";
-  // :append "{ award_whoami ? ` Know Thyself. ` }";
-  // :append "{ award_treasure_island ? ` Treasure Island. ` }";
-  // :append "{ award_find_dragon ? ` Paranoid Much? ` }";
-  // :append "{ award_tarzan ? ` Tarzan. ` }";
-  // :append "{ award_planet_of_apes ? ` Planet of the Apes. ` }";
-  // :append "{ award_bad_boys ? ` Bad boys, bad boys, what ya gonna do. ` }";
-
-   :print "\n";
+    :print {("\n(" + collection_count("awards") + " / " + max_achievements + ")" )}
+    :print "\n";
   }
-
 
   stats : subroutine {
    :print "^c^<✜ STATISTICS ✜<13>>";
@@ -2484,16 +2464,16 @@ subroutines {
   credits: subroutine {
     :print "^c^<✜ CREDITS ✜<13>>";
     : print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
-    : print "^n^<Testing:<#fc3>> Rhiannon Stanton" ;
+    : print "^n^<Testing:<#fc3>> Rhiannon Stanton, Ben Messick" ;
     : print "^n^<Engine:<#fc3>> Adventuron 1.0 (Beta 68j), by Chris Ainsley" ;
     : print "^n^<Fonts:<#fc3>> Antic Slab from <Google Fonts<#369>>[https://fonts.google.com/specimen/Antic+Slab]" ;
     : print "^n^<Music:<#fc3>> Shane Iver of <Silverman Sound Studios<#369>>[https://www.silvermansound.com]" ;
     : print "^n^<Songs:<#fc3>> Fantasy Overture, Helena's Lament, Janus Turning, Underglow, Zen Garden, I Domine";
-    : print "^c^^n^© 2021 Josh Goebel.\nNot for commercial use. Do not redistribute." ;
+    : print "^c^^n^© 2022 Josh Goebel.\nNot for commercial use. Do not redistribute." ;
   }
 
   the_end: subroutine {
-    :print "The wizard steps forward, raising his bloodwood staff high...";
+    :print "The wizard steps forward, raises his bloodwood staff...";
     :press_any_key;
     :print "...then bows low. The rest of the crew follows his lead.";
     :print "\n\"<We each played our parts...\n...but you were the star.<#fff>>\"\n\n";
@@ -2519,30 +2499,30 @@ subroutines {
   }
 
   help: subroutine {
-      :print "- type '<LOOK<#ec9>>' or '<LOOK<#ec9>> <thing<#8ad>>' to examine clues.";
-      :print "- type '<I<#ec9>>' or '<INVENTORY<#ec9>>' to see what you hold (and wear).";
-      :print "- type '<GET<#ec9>> <thing<#8ad>>' to pick up an item.";
-      :print "- type '<DROP<#ec9>> <thing<#8ad>>' to drop or place an item.";
-      :print "- type '<ACHIEVE<#ec9>>' to see your game achievements.";
-      //:print "- type '<STATS<#ec9>>' to see game stats (moves, etc).";
-      :print "- type <N<#ec9>>, <S<#ec9>>, <E<#ec9>>, <W<#ec9>>, <UP<#ec9>>, <DOWN<#ec9>>, etc to move.";
-      : if (tutorial_on == false) {
-            :print "- type '<TUTORIAL ON<#ec9>>' to turn tutorial hints on.";
-      }
+      :print "- type '<LOOK<6>>' or '<LOOK<6>> <thing<#da5>>' to examine clues.";
+      :print "- type '<I<6>>' or '<INVENTORY<6>>' to see what you hold (and wear).";
+      :print "- type '<GET<6>> <thing<#da5>>' to pick up an item.";
+      :print "- type '<DROP<6>> <thing<#da5>>' to drop or place an item.";
+      :print "- type '<ACHIEVE<6>>' to see your game achievements.";
+      //:print "- type '<STATS<6>>' to see game stats (moves, etc).";
+      :print "- type <N<6>>, <S<6>>, <E<6>>, <W<6>>, <UP<6>>, <DOWN<6>>, etc to move.";
+      //: if (tutorial_on == false) {
+      //  :print "- type '<TUTORIAL ON<6>>' to turn tutorial hints on.";
+      //}
       : if (tutorial_on == true) {
-            :print "- type '<TUTORIAL OFF<#ec9>>' to turn tutorial hints off.";
+            :print "- type '<TUTORIAL OFF<6>>' to turn the tutorial off.";
       }
-      //:print "- type '<SETTINGS<#ec9>>' for robot settings.";
-      :print "- type '<SOUND<#ec9>>' for sound settings.";
-      //:print "- type '<LOAD<#ec9>>' or '<SAVE<#ec9>>' to load or save a game.";
-      :print "- type '<QUIT<#ec9>>' to restart a game.";
+      :print "- type '<SOUND<6>>' for sound settings.";
+      :print "- type '<LOAD<6>>' or '<SAVE<6>>' to load or save a game.";
+      :print "- type '<QUIT<6>>' to restart a game.";
   }
   
   ask_tutorial: subroutine {
-   :print "\n\n";
-   :tutorial "Hello, I'm your friendly tutorial. I'll help you learn how to play if you're new to text adventure games.";
-   :tutorial "You can shut me up at any time with <TUTORIAL OFF<6>>, so if you're on the fence, perhaps let me try to help?";
-   :ask_bool {
+    :clear_screen;
+    :print "\n\n";
+    :tutorial "Hello, I'm your friendly tutorial. I'll help you learn how to play if you're new to text adventure games.";
+    :tutorial "You can shut me up at any time with <TUTORIAL OFF<6>>, so if you're on the fence, perhaps let me try to help?";
+    :ask_bool {
       var = "tutorial_on"
       question = Enable the learning tutorial? <(recommended)<10>>
       yes_answer = yes
@@ -2559,8 +2539,9 @@ subroutines {
   }
 
    ask_fantasy_violence: subroutine {
+   :clear_screen;
    :print "\n\n";
-   :tutorial "This game may include some fantasy violence (both direct and implied).";
+   :tutorial "This game may include fantasy violence (both direct and implied).";
    :ask_bool {
       var = "fantasy_violence_ok"
       question = Do you still wish to continue?
@@ -2575,9 +2556,10 @@ subroutines {
   }
 
   title_screen: subroutine {
-    :print "<Forgotten Island<14>>";
+    :print "<$${__game_name}<#fc3>>\nv$${__game_version}";
     :print "by Josh Goebel";
     :print "© 2022";
+    :print "^r^(little yellow wiggly\n means press enter)";
     :press_any_key;
   }
 
@@ -2705,6 +2687,10 @@ assets {
     music_sailing_away: sound_sample "http://joshgoebel.com/adventure/sailing-away.mp3";
     music_underglow: sound_sample "http://joshgoebel.com/adventure/underglow.mp3";
     music_zen_garden: sound_sample "http://joshgoebel.com/adventure/zen-garden.mp3";
+  }
+
+  graphics {
+    loading_graphic : png "http://joshgoebel.com/adventure/island.png" scaling_mode="regular" ;
   }
 
   fonts {
