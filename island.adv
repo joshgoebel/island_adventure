@@ -47,7 +47,7 @@ on_startup {
 
   :gosub "auto_music";  
 
-  //:goto "western_heights_dream";
+  :goto "village";
   //:pocket "spyglass";
   //:goto "shipwreck";
 
@@ -414,7 +414,7 @@ locations {
   // village
   village_square: location "The village surrounds you on all sides.  It's far too quiet, like a ghost town." header="Village, Square" {
     on_command {
-      :match "get fruit; get fabric" {
+      :match "get fruit; get fabric; look fruit; look fabric" {
         :print "It's too old and decayed to be of any use to you.";
       }
       :match "drop stone; drop pebble; drop rock" {
@@ -465,7 +465,13 @@ locations {
   jungle_n: location "{jungle_room_description}" header ="Jungle";
   jungle_nw: location "{jungle_room_description}" header ="Jungle";
   jungle_exit: location "{jungle_room_description}" header ="Jungle";
-  village: location "There is a small village here." header="Lowlands";
+  village: location "There is a small village here." header="Lowlands" {
+    on_command {
+      :match "look village" {
+        :print "Appears to be a small, primitive village, but it's too quiet.  You'll need to enter to learn more.";
+      }
+    }
+  }
   sloping_hills: location "Gently sloping hills rise up to great heights further west. You see a village further east." header="Sloping Hills";
   western_heights_dream_e: location; // dummy exit to the east
   western_heights_dream: location "A full moon hangs high above.  The wind whips at you, threatening to cast you off the cliff and into the sea." header="Western Heights" {
@@ -570,7 +576,13 @@ locations {
         }
     }
   }
-  cliffs_e: location "The jungle ends abruptly with a 200ft plunge to rocky shores below. There is no obvious way down." header="Eastern Cliffs";
+  cliffs_e: location "The jungle ends abruptly with a 200ft plunge to rocky shores below. There is no obvious way down." header="Eastern Cliffs" {
+    on_command {
+      :match "look shores" {
+        :print "Rocky.";
+      }
+    }
+  };
   cliffside_east: location "A three foot wide ledge, perhaps long enough that you could lay down, perhaps not. Vines cover much of the cliff face." header="Eastern Cliffs, Ledge" {
   on_command {
         :match "look vine; look vines" {
@@ -620,7 +632,7 @@ locations {
           :print "You approach the edge.  Looks a long ways down...";
         }
         :match "look circle" {
-          :examine "stones";
+          :examine "circle_stones";
         }
         :match "look boulder" {
           :print "It's massive.  Looking closer you notice that rough and uneven steps carved into the boulder lead downwards.";
@@ -1135,6 +1147,14 @@ on_command {
     :set_true "tutorial_on";
     :tutorial "Tutorial turned on.";
     :done;
+  }
+
+  // VILLAGE
+
+  :if (is_at("village_zone")) {
+    :match "look hut; look huts" {
+      :print "The huts appear to be made of a mixtures of straw, mud, and stone.";
+    }
   }
 
   // CANDLE
@@ -1871,18 +1891,27 @@ on_command {
     }
   }
 
-   // zones
+  // more auto-look
+  :match "look jungle" {
+    :if (index_of { outer -> (d()) inner -> ("jungle") } != -1) {
+      :print "A dense jungle, of the more tropical variety.";   
+   }
+  }
+
+  // zones
 
    :if (is_at("beach_zone")) {
       :match "drink water" {
         :print "What water?";
         :print "You know better thank to drink salt water.";
       }
+      :match "look beach" {
+        :print "Such beautiful white sand.";
+      }
       :match "look sand" {
-         :print "Your average everyday tropical island sand, and plenty of it.";
+         :print "Your average beautiful white tropical island sand, and plenty of it.";
       }
    }
-
 
   :match "achievements -; achieve -; awards -" { :gosub "achievements"; }
   :match "wearing -" { :gosub "wearing"; }
