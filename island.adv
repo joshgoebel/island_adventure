@@ -1,8 +1,8 @@
 ##################################################
-## Lost Island, written by Josh Goebel
+## Forgotten Island, written by Josh Goebel
 ##################################################
 
-__game_name = Lost Island
+__game_name = Forgotten Island
 __game_version = "0.8.2" # not yet releasted
 
 
@@ -13,13 +13,13 @@ game_type = verb_noun
 
 game_information {
 	game_name = ${{__game_name}}
- 	game_shortname = LostIsland
+ 	game_shortname = ForgotIsland
 	written_by = Josh Goebel
  	uuid = cf74ec25-337d-454f-9a0c-273d4c6bb604
 	year_of_release = 2022
 	game_version = $${__game_version}
 	copyright_message = Copyright (C) 2022 Josh Goebel. Not for commercial use. Do not redistribute.
-	short_synopsis = Discover the secrets of a lost island
+	short_synopsis = Discover the secrets of a forgotten island
 }
 
 loading_screen = loading_graphic
@@ -41,8 +41,8 @@ on_startup {
   :set_false "tutorial_on";
 
   :gosub "title_screen";
-  :gosub "ask_fantasy_violence";
-  :gosub "ask_tutorial";
+  //:gosub "ask_fantasy_violence";
+  //:gosub "ask_tutorial";
   :gosub "bootup";
 
   :gosub "auto_music";  
@@ -61,7 +61,9 @@ on_startup {
   //:gosub "dream_of_storm";
   //:goto "quiet_grove";
 
-  //:goto "cliffs_e_clearing";
+  //:goto "dream_ship";
+  //:goto "beach";
+  :goto "western_heights";
   //:pocket "red_marble";
   //:pocket "blue_marble";
   //:pocket "msg_bottle";
@@ -131,6 +133,7 @@ booleans {
   has_seen_wolf: boolean "false";
   has_visited_grove: boolean "false";
   has_dreamed_of_storm: boolean "false";
+  has_seen_altar_flashback: boolean "false";
   dream_intro : boolean "false";
   
   knows_to_swim: boolean "false";
@@ -157,7 +160,7 @@ integers {
    max_achievements: integer "20";
    number_of_stones: integer "89";
 
-   until_wave: integer "31";
+   until_wave: integer "0";
    dream_counter : integer "0";
    thirst: integer "0";
    hunger: integer "0";
@@ -352,7 +355,13 @@ locations {
   beach_ww: location "A beach of beautiful white sand. There is a rocky outcropping to the north." header="Southern Shore";
   beach_e: location "A beach of beautiful white sand." header="Southern Shore";
   beach_ee: location "A beach of beautiful white sand." header="Southern Shore";
-  beach_ww_rocky: location "A small crevice disappears downwards into the rock." header="Rocky Outcropping";
+  beach_ww_rocky: location "A small crevice disappears downwards into the rock." header="Rocky Outcropping" {
+    on_command {
+      :match "go crevice; enter crevice" {
+        :goto "beach_ww_cave";
+      }
+    }
+  };
   beach_ww_cave: location "You are standing in a small cave. {beach_cave_description}" header="Small Cave" {
     on_tick {
       :if (is_candle_lit && is_beside("shadow_bear")) {
@@ -456,7 +465,7 @@ locations {
   // jungle
   jungle_edge: location "A small footpath leads north into the jungle.  To the south is the beach." header="Jungle's Edge" {
     on_command {
-      :match "look water; drink water" {
+      :match "look water; drink water; get water" {
         :print "There is no water here, you'll need to find some elsewhere.";
       }
     }
@@ -492,6 +501,10 @@ locations {
   western_heights_dream_e: location; // dummy exit to the east
   western_heights_dream: location "A full moon hangs high above.  The wind whips at you, threatening to cast you off the cliff and into the sea." header="Western Heights" {
     on_command {
+        :match "touch altar" { 
+          :print "Touching the altar brought you here, but it does not seem to be how you must return...";
+          :done;
+        }
         :match "listen spell; listen incantation; listen words" {
           :print "You can't make out the words.";
         }
@@ -522,7 +535,9 @@ locations {
   western_heights:  location "This seems to be the highest point of the entire island, allowing you to see for miles.{if_only_had_spyglass}" header="Western Heights" {
     on_tick {
         :match "look altar" {
-          :print "<You have a sudden, strong desire to touch it.<#9f9>>";
+          :if (!has_seen_altar_flashback) {
+            :print "<You have a sudden, strong desire to touch it.<#9f9>>";
+          }
         }
         :match "look crack" {
           :if (has_not_created("red_marble")) {
@@ -545,6 +560,7 @@ locations {
           :clear_screen;
           :print "...and suddenly you are here, but not here.";
           :goto "western_heights_dream";
+          :set_true "has_seen_altar_flashback";
           :done;
         }
         :match "look down" {
@@ -700,7 +716,7 @@ locations {
           :print "Retreating below deck sounds great, but you dare not leave your post.";
         }
         :match "hit captain; punch captain" {
-          :print "You consider assuming command by brute force, but have second thoughts.  Is a mutiny truly the answer?";
+          :print "You consider assuming command by force, but have second thoughts.  Is a mutiny truly the answer?";
           :set_string var="award_name" text="Bad boys, bad boys, what ya gonna do";
           :gosub "give_award";
         }
@@ -715,8 +731,11 @@ locations {
         :match "walk plank; jump overboard; jump water; jump ship; swim _" {
           :print "Surely things aren't that bad yet?";
         }
-        :match "look wave" {
-          :print "It must be at least as tall as 4 of your own vessel stacked mast to mast. A huge wall of angry water.";
+        :match "look ship; look boat" {
+          :print "The Drunken Revenge. She's gotten you thru thick and thin in the past - perhaps she'll pull thru yet.";
+        }
+        :match "x wave; x waves; x sea; x water" {
+          :print "The wave approaching must be at least as tall as 4 of your own vessel stacked mast to mast. A huge wall of angry water.";
         }
         :match "piss pants; pee pants; wet pants; pee yourself; wet yourself" {
           :print "The firstmate looks at you a awkwardly.";
@@ -757,6 +776,16 @@ locations {
         :match "look helm" {
           :examine "d_wheel";
         }
+        :match "look deck" {
+          :print "You recall the beautiful, sunny days you spent swabbing that deck in the past. You should have appreciated them more.";
+        }
+        :match "look leviathan" {
+          :print "You don't see one (yet), you just thought you heard one.";
+          :print "Could also be your overactive imagination...";
+        }
+        :match "look cats" {
+          :print "You do not see any of the ship's felines at the present moment.";
+        }
         :match "look nest; look crowsnest" {
           :print "Up high above.  You can see it periodically when lightning flashes across the sky.";
         }
@@ -764,7 +793,7 @@ locations {
           :print "The only killer you see is the wave in the distance.";
         }
         :match "kiss captain; kiss firstmate" {
-          :print "Is this really the right time to share those feelings?";
+          :print "Is this really the right time to share your feelings?";
         }
         :match "talk captain; speak captain; look captain" {
           :print "\"Don't worry kid, we'll be fine,\" he boasts.";
@@ -833,17 +862,18 @@ objects {
   // western_heights_dream
   wounded_wolf: scenery "<wolf<#c6c>>" at="western_heights_dream" msg="The large creature is bound upon the altar and appears injured. It looks towards you, or is that merely your imagination?";
   evil_wizard: scenery "<wizard<#c6c>>" at="western_heights_dream" msg="He wears a black cape and holds a bloodwood staff. He is slowly speaking the words of some sort of incantation or spell.";
-  bloodwood_staff: scenery "a bloodwood staff" at="western_heights_dream" msg="The staff is at least 7 feet long and a redish black color." conspicuous="false";
+  bloodwood: scenery "bloodwood" at="western_heights_dream" msg="Very rare, from the Blood Forest. It is said that removing a single limb from that forest traps and binds the tree's soul to the wood for eternity." conspicuous="false";
+  bloodwood_staff: scenery "a bloodwood staff" at="western_heights_dream" msg="The bloodwood staff is at 7 feet long and a dark redish brown. Red mists swirl inside the staff." conspicuous="false";
   wizard_cape: scenery "a cape" at="western_heights_dream" msg="The wizard's black cape is blowing about madly in the wind." conspicuous="false";
   moonstone_altar: scenery "moonstone altar" at="western_heights_dream" msg="A massive moonstone altar.  It glows a bright blueish yellow in the moonlight.";
-  moon: scenery "moon" at="western_heights_dream" msg="A full moon, though you swear it looms larger than usual." conspicuous="false";
+  moon: scenery "moon" at="western_heights_dream" msg="A full moon; you swear it looms larger than usual." conspicuous="false";
   moonlight: scenery "moonlight" at="western_heights_dream" msg="The moonlight feels as if it carries a slight chill." conspicuous="false";
   d_sea: scenery "sea" at="western_heights_dream" msg="A stormy sea swirls and churns far below." conspicuous="false";
   blazing_bonfire: scenery "huge bonfire" at="western_heights_dream" msg="A massive bonfire lights the night, yet provides no warmth.";
 
   // western heights
   charred_ashes: scenery "charred ashes" at="western_heights" msg="Appears to be the remains of a large bonfire from many moons ago. This would be the perfect spot to build a signal fire.";
-  stone_altar: scenery "stone altar" at="western_heights" msg="A massive moonstone altar. A wide crack intersects it from top to bottom.";
+  stone_altar: scenery "stone altar" at="western_heights" msg="A massive moonstone altar. An impossible crack intersects it from top to bottom.";
   altar_crack: scenery "a crack" at="western_heights" msg="It almost looks as if it was violently torn in half. What forces could do such a thing?" conspicuous="false";
   altar_moonstone: scenery "moonstone" at="western_heights" msg="Slightly bluer than limestone; glows when exposed to moonlight; known to be almost indestructable. The superstitious say it posses magical properties." conspicuous="false";
 
@@ -892,12 +922,15 @@ objects {
   seagull: scenery "seagull" at = "beach" msg="What a beautiful, delicious bird.";
   dead_seagull: scenery "dead seagull" msg="Your stomach rumbles loudly.";
   debris : scenery "random debris" at = "beach" msg="Assorted debris from the wreck. Nothing useful at the moment.";
-  msg_bottle: object "a bottle" at = "beach_w" msg="A beautiful blue frosted glass bottle that looks as if it's been tossed on the waves for years.  There is a message inside.";
   seashell : object "a seashell" at = "waters_edge" msg="Reminds you of picking up seashells as a child.";
-  stone: object "a stone" msg="one of the stones from the strange pile";
+  stone: object "a stone" msg="One of the stones from the strange pile.";
   pile_stones: scenery "a pile of stones" at ="beach_ee" msg="A pile of perhaps 100 smooth, rounded stones.";
   shadow_bear: scenery "huge black bear" at="beach_ww_cave";
   ships_wheel: scenery "the ship's wheel" msg="The ship's wheel. You must have never even let go - your grand-daddy would be so proud." at="waters_edge";
+
+  bottle: object "a bottle" msg="A beautiful blue frosted glass bottle that looks as if it's been tossed on the waves for years.";
+  bottle_message: object "a message" msg="It reads: \"Trapped on an island - send help.\"";
+  msg_bottle: object "a bottle" at = "beach_w" msg="A beautiful blue frosted glass bottle that looks as if it's been tossed on the waves for years.  There is a message inside.";
 
   // chest
   chest: scenery "a locked chest" at="beach_e" msg="Massive solid oak chest (locked). Perhaps you could smash it open?";
@@ -1158,6 +1191,12 @@ barriers {
 // V = Village
 
 on_command {
+
+  :if (inputs() > 2) {
+    :print "This game requires only two word inputs.";
+    :done;
+  }
+
   :match "help -" { :gosub "help"; }
 
   // HELP FOR USE *
@@ -1388,7 +1427,7 @@ on_command {
           }
           :add_choice "the wizard" {
             :print "This dark figure has held many names and his tales would fill many books.";
-            :print "The wizard tricked the wolf, gauged it's eyes (stealing it's powers), and then placed it into a dark, dreamless slumber.";
+            :print "The wizard tricked the wolf, gouged it's eyes (stealing it's powers), and then placed it into a dark, dreamless slumber.";
           }
           :add_choice "a sacred grove" {
             :print "There stands a wise, sacred tree in the center of the island that we worship.";
@@ -1478,6 +1517,14 @@ on_command {
    }
 
    :if (is_present("seagull")) {
+      :match "kill bird; attack bird" {
+        :print "You imagine dinner, but first you'd have to catch it...";
+        :done;
+      }
+      :match "get bird" {
+        :print "First you'd need to catch it...";
+        :done;
+      }
       :match "eat bird; cook bird; roast bird" {
         :print "Yum, but first you'd have to catch it...";
         :done;
@@ -1531,6 +1578,7 @@ on_command {
               :print "Ungh!" ;
               :print "Darn!" ;
             }
+            :print "You retrieve your knife from the sand.";
             :print "The seagull is no longer amused.";
           } :else {
             :print "...and your blade flies true.";
@@ -1545,6 +1593,9 @@ on_command {
         :if (is_beside(s1()) || is_carried(s1())) {
           :print {( "You throw " + d(s1()) + " at the seagull." )} ;
           :print "The seagull looks amused.";
+          :if (is_carried(s1())) {
+            :drop;
+          }
           :done;
         }
       }
@@ -1865,6 +1916,18 @@ on_command {
   // POOL OF WATER
 
   :if (is_present("pool")) {
+    :if (is_carried("bottle")) {
+      :match "get water; fill bottle" {
+        :print "You seem to have lost the cork, oops.";
+        :done;
+      }
+    }
+    :if (is_carried("msg_bottle")) {
+      :match "get water; fill bottle" {
+        :print "The bottle already has something in it.";
+        :done;
+      }
+    }
     :match "drink water; drink pool; drink _" {
       :set_integer var = "thirst" value = "0" ;
       :print "You didn't know water could taste this good.";
@@ -1918,29 +1981,55 @@ on_command {
 
   // MESSAGE IN A BOTTLE
 
+  :if (is_present("bottle")) {
+  }
+
+  :if (is_present("bottle_message")) {
+    :match "read message; look message" {
+      :examine;
+      :set_string var="award_name" text="Message In a Bottle";
+      :gosub "give_award";
+      :press_any_key;
+    }
+  }
+
   :if (is_present "msg_bottle") {
     :match "throw bottle; toss bottle" {
       :print "You throw the bottle far out to sea.";
       :destroy "msg_bottle";
     }
     :match "read bottle" {
-      :print "It has no label. There is a message inside.";
-      :if (tutorial_on) {
-        :tutorial "Did you perhaps mean <read message<6>>?";
-      }
+      :print "It has no label to read. There is a message inside.";
+      //:if (tutorial_on) {
+      //  :tutorial "Did you perhaps mean <read message<6>>?";
+      //}
     }
     :match "smash bottle; break bottle" {
       :print "Why so violent? Did you consider just opening it?";
     }
-    :match "look message; read message; read note; open bottle" {
-      :if (verb_is("open")) {
-        :print "You open the bottle and read the note.";
-      }
-      :print "It reads:\n  \"Trapped on an island. Send help.\"";
-      :set_string var="award_name" text="Message In a Bottle";
-      :gosub "give_award";
-      :press_any_key;
+    :match "read message; look message" {
+      :print "It's still sealed inside the bottle.";
     }
+    :match "get message; open bottle" {
+      :print "You open the bottle and take out the message.";
+      :swap o1="msg_bottle" o2="bottle";
+      :if (is_carried("bottle")) {
+        :pocket "bottle_message";
+      } :else {
+        :create "bottle_message";
+      }
+    }
+    //:match "look message; read message; read note; open bottle" {
+    //  :if (verb_is("open")) {
+    //    :print "You open the bottle and read the note.";
+    //  }
+    //  
+    //  //:print "It reads:\n  \"Trapped on an island. Send help.\"";
+    //  :examine "bottle_message";
+    //  :set_string var="award_name" text="Message In a Bottle";
+    //  :gosub "give_award";
+    //  :press_any_key;
+    //}
   }
 
   :if (is_present "seashell") {
@@ -1975,7 +2064,7 @@ on_command {
   // zones
 
    :if (is_at("beach_zone")) {
-      :match "drink water" {
+      :match "drink water; get water" {
         :print "What water?";
         :print "You know better thank to drink salt water.";
       }
@@ -2013,6 +2102,8 @@ on_command {
   }
 
   :match "touch _" {
+    :disambiguate_s1 "present";
+    //:print {( s1() )}
     :if (is_present(s1())) {
       :print "You feel nothing unexpected.";
     } :else {
@@ -2175,10 +2266,6 @@ on_tick {
       }
     }
 
-    :if (tutorial_progress==5) {
-      :tutorial "You'll notice that most commands are entered as <VERB NOUN<8>> pairs - like \"drop book\" or \"swim river\", but not all.\nTry <north<6>> or just <n<6>> to move north.";
-    }
-
     // tutorial, step 0 
 
     :if (is_at("washedashore")) {
@@ -2278,7 +2365,7 @@ on_tick {
         }
         :match "look knife" {
           :if (is_beside "knife") {
-              :tutorial "A knife seems useful.  \nType <get knife<6>> to pick it up.";
+            :tutorial "A knife seems useful.  \nType <get knife<6>> to pick it up.";
           }
         }
         :match "look seashell; listen seashell" {
@@ -2287,10 +2374,18 @@ on_tick {
         }
         }
         :match "get knife" {
-          :tutorial "Great! Now what about that seashell?";
+          :if (!is_carried("seashell")) {
+            :tutorial "Great! Now what about that seashell?";
+          } :else {
+            :tutorial "Awesome, now try <i<6>> or <inventory<6>> to see what you're carrying.";
+          }
         }
         :match "get shell" {
-          :tutorial "Awesome, now try <i<6>> or <inventory<6>> to see what you're carrying.";
+          :if (!is_carried("knife")) {
+            :tutorial "A knife seems even more useful (than a seashell).  \nType <get knife<6>> to pick it up.";
+          } :else {
+            :tutorial "Awesome, now try <i<6>> or <inventory<6>> to see what you're carrying.";
+          }
         }
         :match "drop seashell" {
           :tutorial "I believe you have the hang of it!";
@@ -2347,7 +2442,7 @@ on_tick {
           :set_string var="tmp_string" text="You hear a fellow crewmate cry out in the night.";
           :set_string var="tmp_string" text="You really wish you'd used the restroom earlier.";
           :set_string var="tmp_string" text="You imagine the ship being torn apart.";
-          :set_string var="tmp_string" text="Several cats run madly across the deek meowing fearfully.";
+          :set_string var="tmp_string" text="Several cats run madly across the deck meowing fearfully.";
           :set_string var="tmp_string" text="You see your life flashing before your eyes.";
           :set_string var="tmp_string" text="You regret the life choices that brought you here.";
         }
@@ -2421,7 +2516,7 @@ subroutines {
   dream_of_storm: subroutine {
     :set_true "dream_intro";
     :set_integer var="dream_counter" value="-1";
-    :set_integer var="until_wave" value="31";
+    :set_integer var="until_wave" value="26";
     :set_theme "dream_theme";
     
     :create "d_stranger" target="dream_ship";
@@ -2433,7 +2528,7 @@ subroutines {
     :set_false "dream_intro";
     :set_true "has_dreamed_of_storm";
     :set_integer var="dream_counter" value="-1";
-    :set_integer var="until_wave" value="31";
+    :set_integer var="until_wave" value="26";
     :set_theme "main_theme";
     :gosub "main_music_theme";  
     :goto "beach_ww_rocky";
