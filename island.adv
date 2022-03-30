@@ -28,21 +28,12 @@ loading_screen = loading_graphic
 //}
 
 on_startup {
-
-  //:goto "reception";
-
-//  :goto "quiet_grove";
-  //:goto "beach";
-  //:pocket "medallion";
-  //:pocket "spyglass";
-  //:wear "medallion";
-
   :set_theme "main_theme";
   :set_false "tutorial_on";
 
   :gosub "title_screen";
-  //:gosub "ask_fantasy_violence";
-  //:gosub "ask_tutorial";
+  :gosub "ask_fantasy_violence";
+  :gosub "ask_tutorial";
   :gosub "bootup";
 
   :gosub "auto_music";  
@@ -55,6 +46,8 @@ on_startup {
   //:goto "shipwreck";
 
   //:goto "cliffs_e_clearing";
+  //:pocket "red_marble";
+  //:pocket "blue_marble";
   //:goto "quiet_grove";
   //:goto "beach_ww";
   
@@ -63,15 +56,12 @@ on_startup {
 
   //:goto "dream_ship";
   //:goto "beach";
-  :goto "western_heights";
-  //:pocket "red_marble";
-  //:pocket "blue_marble";
+  //:goto "western_heights";
+  
   //:pocket "msg_bottle";
   //:goto "village_hut";
   //:pocket "oar";
   //:create "wolf";
-  
-
 }
 
 
@@ -650,6 +640,9 @@ locations {
   };
   
   cliffs_e_clearing: location "You stand in a large clearing, bordered by dense jungle to the west. A huge boulder clings resolutely to the edge of the cliff." header="Eastern Cliffs,  Clearing" {
+    on_tick {
+
+    }
     on_command {
         :match "sit stone; sit stones" {
           :print "You sit down for a moment and ponder the life choices that led you to this point...";
@@ -2203,7 +2196,7 @@ on_tick {
   // ****************
   //  chase the wolf
 
-  :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() > 4 ) {
+  :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() >= 3 ) {
     :print "<The wolf looks at you, then darts off to the north<13>>";
     :destroy "wolf";
     :create "wolf" target="cliffs_e";
@@ -2223,9 +2216,13 @@ on_tick {
    
   // wolf
 
+  :if (is_wolf_awake && !has_seen_wolf && is_at("cliffs_e_clearing") && linger() > 7) {
+    :print "You imagine you hear a noise to the north.";
+  }
+
   :if (is_at "cliffs_e") {
     :if (is_wolf_awake && ! has_seen_wolf) {
-      :print "You hear a loud noise to the south.";
+      :print "You're certain you hear a loud crash to the south.";
       :destroy "wolf_statue3";
       :create "wolf_statue4" target="cliffs_e_clearing";
       :create "wolf" target="cliffs_e_clearing";
