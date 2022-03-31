@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "0.8.2" # not yet releasted
+__game_version = "0.8.3" # not yet releasted
 
 
 start_at = washedashore
@@ -31,9 +31,9 @@ on_startup {
   :set_theme "main_theme";
   :set_false "tutorial_on";
 
-  :gosub "title_screen";
-  :gosub "ask_fantasy_violence";
-  :gosub "ask_tutorial";
+//  :gosub "title_screen";
+//  :gosub "ask_fantasy_violence";
+//  :gosub "ask_tutorial";
   :gosub "bootup";
 
   :gosub "auto_music";  
@@ -55,7 +55,7 @@ on_startup {
   //:goto "quiet_grove";
 
   //:goto "village_square";
-  //:goto "beach";
+  :goto "beach";
   //:goto "western_heights";
   
   //:pocket "msg_bottle";
@@ -1623,10 +1623,18 @@ on_command {
     }
     :match "shake tree; shake trees; wiggle tree; wiggle trees" {
       :print "You give it a good shake...";
-      :press_any_key;
-      :success;
-      :print "A coconut falls from the tree.";
-      :create "coconut";
+      :if (is_exists("coconut")) {
+        :print "... and nothing.";
+        :if (is_present("coconut")) {
+          :print "You've already shaken the coconut from the tree!";
+        }
+      } 
+      :else {
+        :press_any_key;
+        :success;
+        :print "A coconut falls from the tree.";
+        :create "coconut";
+      }
     }
   }
 
