@@ -45,8 +45,8 @@ on_startup {
   //:pocket "spyglass";
   //:goto "shipwreck";
 
-  :goto "cliffs_e_clearing";
-  :pocket "red_marble";
+  //:goto "cliffs_e_clearing";
+  //:pocket "red_marble";
   //:pocket "blue_marble";
   //:goto "quiet_grove";
   //:goto "beach_ww";
@@ -372,7 +372,7 @@ locations {
   waters_edge : location "You washed ashore here. Further south out to sea a half sunken shipwreck rises from the waves." header="Water's Edge" {
     on_command {
       :match "look waves; look sea" { :print "The waves look a bit angry."; };
-      :match "look ship; look shipwreck; look south" {
+      :match "x ship; x shipwreck; x south; x flag" {
         :print "A black skull and crossbones flutters in the wind. You wonder if you could swim that far.";
       };
       :match "south _" { 
@@ -449,6 +449,11 @@ locations {
   village_w: location "Small huts surround both sides of the street." header="Village";
   village_hut: location "This hut is homey, yet spacious - larger than the others. A layer of dust covers everything." header="Village, Elder's Hut" {
     on_command {
+      :match "enter fireplace" {
+        :print "It's small and you wouldn't fit.  You don't possess the Christmas magics.";
+        :set_string var="award_name" text="Jolly Old St. Nicholas";
+        :gosub "give_award";
+      }
       :match "sleep bed" {
         :print "Ok, but just a quick nap...";
         :print "Zzzz...";
@@ -501,7 +506,7 @@ locations {
           :print "Touching the altar brought you here, but it does not seem to be how you must return...";
           :done;
         }
-        :match "listen spell; listen incantation; listen words" {
+        :match "listen spell; listen incantation; listen words; listen _" {
           :print "You can't make out the words.";
         }
         :match "east _" {
@@ -534,6 +539,10 @@ locations {
           :if (!has_seen_altar_flashback) {
             :print "<You have a sudden desire to touch the altar.<#9f9>>";
           }
+        }
+        :match "x view; x point" {
+          :print "The highest point of the island, the view is spectacular.";
+          :done;
         }
         :match "look crack" {
           :if (has_not_created("red_marble")) {
@@ -782,8 +791,14 @@ locations {
           :print "You don't see one (yet), you just thought you heard one.";
           :print "Could also be your overactive imagination...";
         }
+        :match "listen _" {
+          :print "Wind. Rain. Waves. Shouts. Meows.";
+        }
         :match "look cats" {
-          :print "You do not see any of the ship's felines at the present moment.";
+          :print "You notice several of the felines hiding under a tarp.";
+        }
+        :match "look tarp" {
+          :print "Just a tarp. Cats are hiding under it.";
         }
         :match "look nest; look crowsnest" {
           :print "Up high above.  You can see it periodically when lightning flashes across the sky.";
@@ -1256,6 +1271,9 @@ on_command {
     :match "look hut; look huts" {
       :print "The huts appear to be made of a mixtures of straw, mud, and stone.";
     }
+    :match "knock huts" {
+      :print "No one is home.";
+    }
   }
 
   // CANDLE
@@ -1416,7 +1434,7 @@ on_command {
       :match "get tome" {
         :print "You cannot.  Some magic ties it to this place.";
       }
-      :match "read tome" {
+      :match "read tome; open tome" {
         :set_true "is_reading";
         :while (is_reading) {
           :clear_screen;
@@ -1491,7 +1509,7 @@ on_command {
           :swap o1 = "wolf_statue" o2="wolf_statue2";
         }
       }
-      :match "insert eyes; place eyes; add eyes; put eyes; fill sockets" {
+      :match "insert eyes; place eyes; add eyes; put eyes; fill sockets; complete statue" {
         :if (is_present("red_marble") && is_present("blue_marble")) {
           :print "The stone eyes lock into place and their color fades to a dull shade of gold.";
           :print "<You feel as if you’re being watched.<13>>";
@@ -1504,8 +1522,8 @@ on_command {
         // we have either, but not both
         } :else_if (is_present("red_marble") || is_present("blue_marble")) {
           :print "<You imagine you hear a howl in the distance.<13>>";
-          :print "You slowly insert the marble, but it seems to do nothing... so you remove it."; 
-          :print "Perhaps you need both eyes?";
+          :print "You slowly insert your single marble, but it seems to do nothing... so you remove it."; 
+          :print "Perhaps you need a pair?";
         }
       }
       :match "look eyes" {
@@ -1650,7 +1668,7 @@ on_command {
   }
 
    :if (is_present("coconut")) {
-      :match "crack coconut; split coconut; smash coconut" {
+      :match "crack coconut; split coconut; smash coconut; break coconut; open coconut" {
         :print "Your grand-daddy never taught ya to crack open a coconut.";
         :print "You could just cut into it with your trusty knife.";
         :if (!is_carried("knife")) {
@@ -1664,7 +1682,10 @@ on_command {
           :print "Stab it with what?";
         }
       }
-      :match "eat coconut; cut coconut; slice cococut; pry coconut" {
+      :match "squeeze coconut" {
+        :print "You squeeze the coconut until you're blue in the face.";
+      }
+      :match "eat coconut; cut coconut; slice cococut; pry coconut; knife coconut" {
         :if (is_carried("knife")) {
           :print "You cut into the coconut with your knife.\nDelicious.";
           :set_integer var ="hunger" value="0";
@@ -1690,14 +1711,20 @@ on_command {
 
   // THINGS YOU CANNOT HAVE
 
-   :match "get wheel" {
-      :if (is_present "ships_wheel") {
-        :print "It's far too large to just carry around.\nBesides, what would you need it for?";
-      }
-   }
+  :match "get wheel" {
+    :if (is_present "ships_wheel") {
+      :print "It's far too large to just carry around.\nBesides, what would you need it for?";
+      :done;
+    }
+  }
+
+  :match "push wheel; pull wheel; drag wheel; move wheel; roll wheel" {
+    :print "That seems like a lot of work. Why? You can't imagine what you would need it for.";
+    :done;
+  }
 
   :if (is_present "driftwood") {
-    :match "break wood" {
+    :match "break wood; cut wood" {
       :print "If only you had a tool for that...";
     }
     :match "get wood; get driftwood" {
@@ -1945,6 +1972,10 @@ on_command {
         :done;
       }
     }
+    :match "swim -; swim pool" {
+      :print "You wish.  If only the pool was a bit larger...";
+      :done;
+    }
     :match "drink water; drink pool; drink _" {
       :set_integer var = "thirst" value = "0" ;
       :print "You didn't know water could taste this good.";
@@ -2025,7 +2056,7 @@ on_command {
       :print "Why so violent? Did you consider just opening it?";
     }
     :match "read message; look message" {
-      :print "It's still sealed inside the bottle.";
+      :print "It's still sealed inside the bottle. You'd first need to open the bottle.";
     }
     :match "get message; open bottle" {
       :print "You open the bottle and take out the message.";
@@ -2071,11 +2102,16 @@ on_command {
     }
   }
 
-  // more auto-look
-  :match "look jungle" {
-    :if (index_of { outer -> (d()) inner -> ("jungle") } != -1) {
+  // AUTO-LOOK
+  
+  // in the jungle
+  :if (index_of { outer -> (d()) inner -> ("jungle") } != -1) {
+    :match "look jungle" {
       :print "A dense jungle, of the more tropical variety.";   
-   }
+    }
+    :match "x trees" {
+      :print "Huge. Tropical.";
+    }
   }
 
   // zones
@@ -2116,6 +2152,17 @@ on_command {
 
   :match "the end" {
     :print "A bit premature?";
+  }
+
+  // CATCH ALL
+
+  :match "push *; pull *; drag *; move *; roll *" {
+    :disambiguate_s1 "present";
+    :if (is_present(s1())) {
+      :print "Perhaps you could, but why would you want to?";
+    } :else {
+      :print "I'm not sure what you're referring to.";
+    }
   }
 
   :match "touch _" {
