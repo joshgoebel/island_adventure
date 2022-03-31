@@ -45,8 +45,8 @@ on_startup {
   //:pocket "spyglass";
   //:goto "shipwreck";
 
-  //:goto "cliffs_e_clearing";
-  //:pocket "red_marble";
+  :goto "cliffs_e_clearing";
+  :pocket "red_marble";
   //:pocket "blue_marble";
   //:goto "quiet_grove";
   //:goto "beach_ww";
@@ -54,7 +54,7 @@ on_startup {
   //:gosub "dream_of_storm";
   //:goto "quiet_grove";
 
-  //:goto "dream_ship";
+  //:goto "village_square";
   //:goto "beach";
   //:goto "western_heights";
   
@@ -425,7 +425,7 @@ locations {
   };
 
   // village
-  village_square: location "The village surrounds you on all sides, but it's far too quiet - like a ghost town." header="Village, Square" {
+  village_square: location "The village surrounds you on all sides, but it's far too quiet - like a ghost town." header="Village Square" {
     on_command {
       :match "get fruit; get fabric; look fruit; look fabric" {
         :print "It's far too old and decayed to be of any use.";
@@ -503,7 +503,7 @@ locations {
           :print "Yet somehow you are certain you could leave at anytime, merely by closing your eyes.";
         }
         :match "close eyes; shut eyes; blink eyes" {
-          :print "You close your eyes... slowly the cold wind and rain receed until there is only silence...";
+          :print "You close your eyes... slowly the cold wind and rain recede until there is only silence...";
           :press_any_key;
           :set_theme "main_theme";
           :gosub "main_music_theme";  
@@ -526,14 +526,14 @@ locations {
     on_tick {
         :match "look altar" {
           :if (!has_seen_altar_flashback) {
-            :print "<You have a sudden, strong desire to touch it.<#9f9>>";
+            :print "<You have a sudden desire to touch the altar.<#9f9>>";
           }
         }
         :match "look crack" {
           :if (has_not_created("red_marble")) {
               :print "Wait a minute...";
               :press_any_key;
-              :print "There is something hiding at the very bottom the crack.";
+              :print "There is something hiding at the very bottom of the crack.";
               :press_any_key;
               :create "red_marble";
               :print "<you notice:<#777>> red marble";
@@ -598,7 +598,7 @@ locations {
         }
     }
   }
-  cliffs_e: location "The jungle ends abruptly with a 200ft plunge to rocky shores below. There is no obvious way down." header="Eastern Cliffs" {
+  cliffs_e: location "The jungle ends abruptly with a two-hundred foot plunge to rocky shores below. There is no obvious way down." header="Eastern Cliffs" {
     on_command {
       :match "look shores" {
         :print "Rocky.";
@@ -728,7 +728,7 @@ locations {
           :print "The Drunken Revenge. She's gotten you thru thick and thin in the past - perhaps she'll pull thru yet.";
         }
         :match "x wave; x waves; x sea; x water" {
-          :print "The wave approaching must be at least as tall as 4 of your own vessel stacked mast to mast. A huge wall of angry water.";
+          :print "The wave approaching must be at least as tall as four of your own vessel stacked mast to mast. A huge wall of angry water.";
         }
         :match "piss pants; pee pants; wet pants; pee yourself; wet yourself" {
           :print "The firstmate looks at you a awkwardly.";
@@ -835,7 +835,7 @@ objects {
   // RECEPTION
   r_seagull: scenery "seagull" at="reception" msg="The seagull slightly dips it's head as if taking a bow.";
   r_captain: scenery "<captain<#c6c>>" at="reception" msg="A patch covers one eye and a parrot rests on his shoulder. Yes, the captain is a bit stereotypical, but you'd never say that to his face.";
-  r_firstmate: scenery "<firstmate<#c6c>>" at="reception" msg="A bit of blond sandy hair escape from under a red bandana. His smile may be missing a few teeth, but is as still friedly as ever.";
+  r_firstmate: scenery "<first mate<#c6c>>" at="reception" msg="A bit of blond sandy hair escape from under a red bandana. His smile may be missing a few teeth, but is as still friedly as ever.";
   r_stranger: scenery "<stranger<#c6c>>" at="reception" msg="The frail old man wears in a dingy cloak.  He lean's on a gnarled walking stick, as if it were a cane.";
   r_wizard: scenery "<wizard<#c6c>>" msg="He wears a black cape and grips a bloodwood staff.  He smiles and makes a very deep bow.";
   r_wolf: scenery "<wolf<#c6c>>" at="reception" msg="A dire wolf with a light grey mane and deep <golden<#fc3>> eyes.  It yips at you and wags it's tail in a friendly fashion.";
@@ -850,7 +850,7 @@ objects {
   bed: scenery "a bed" msg="A cozy small bed." at="village_hut";
   kettle: scenery "a kettle" msg="A large kettle hangs over the fireplace, smells like grandma's chili." at="village_hut";
   fireplace: scenery "a fireplace" msg="Looks like it hasn't been used in many years." at="village_hut";
-  tome: object "a tome" msg="a large book, very old" at="village_hut";
+  tome: object "a tome" msg="A large book, very old." at="village_hut";
 
   // western_heights_dream
   wounded_wolf: scenery "<wolf<#c6c>>" at="western_heights_dream" msg="The large creature is bound upon the altar and appears injured. It looks towards you, or is that merely your imagination?";
@@ -910,7 +910,7 @@ objects {
   knife: object "a knife" at = "waters_edge" msg="It appears quite sharp.";
   oar: object "an oar" at ="beach_w" msg="A long rowboat oar; used for paddling.";
   broken_oar: object "a broken oar"  msg="Broken in half, useless.";
-  coconut_trees: object "coconut trees" at="beach_w" msg="Coconuts are delicious. But they are up to high.";
+  coconut_trees: object "coconut trees" at="beach_w" msg="Coconuts are delicious. But they are up too high.";
   coconut: object "a coconut" msg="A delicious coconut.";
   seagull: scenery "seagull" at = "beach" msg="What a beautiful, delicious bird.";
   dead_seagull: scenery "dead seagull" msg="Your stomach rumbles loudly.";
@@ -1001,6 +1001,7 @@ vocabulary {
    :noun / aliases = [shipwreck, wreck, ship]
    :noun / aliases = [ocean, sea, waves]
    :noun / aliases = [path, footpath]
+   :noun / aliases = [firstmate, mate]
 
   // directions
    :noun / aliases = [north, n]
@@ -1242,6 +1243,10 @@ on_command {
   // VILLAGE
 
   :if (is_at("village_zone")) {
+    :if (is_at("village_hut")) {
+      :print "Larger than the others, otherwise similar.";
+      :done;
+    }
     :match "look hut; look huts" {
       :print "The huts appear to be made of a mixtures of straw, mud, and stone.";
     }
@@ -1412,7 +1417,7 @@ on_command {
           :print "^n^<Elder's Hut - reading<5>>";
           :print "You sit down on the bed and slowly thumb thru the pages.";
           :add_choice "a final stand" {
-            :print "I depart now to face the wizard with what little courage and magics I posess.";
+            :print "I depart now to face the wizard with what little courage and magics I possess.";
             :print "...I fear both shall be insufficient.";
           }
           :add_choice "the wolf" {
@@ -1420,7 +1425,7 @@ on_command {
           }
           :add_choice "the wizard" {
             :print "This dark figure has held many names and his tales would fill many books.";
-            :print "The wizard tricked the wolf, gouged it's eyes (stealing it's powers), and then placed it into a dark, dreamless slumber.";
+            :print "The wizard tricked the wolf, gouged its eyes (stealing its powers), and then placed it into a dark, dreamless slumber.";
           }
           :add_choice "a sacred grove" {
             :print "There stands a wise, sacred tree in the center of the island that we worship.";
@@ -1430,7 +1435,7 @@ on_command {
             :print "I do not know what has become of my people.";
             :print "I fear I will never know.";
           }
-          :add_choice "a hero fortold" {
+          :add_choice "a hero foretold" {
             :print "All of this was long ago foretold... also that one day a hero would come - to right the old wrongs.";
             :print "Seek the wolf... and perhaps then the tree would offer help...";
           }
@@ -2314,7 +2319,7 @@ on_tick {
 
         :if (!tut_look_debris) {
           :tutorial "Thank goodness you're still with us!";
-          :tutorial "First, lets have a look around. Try <look debris<6>>.";        
+          :tutorial "First, let's have a look around. Try <look debris<6>>.";        
         }
         :else_if (!tut_look_gull) {
           :tutorial "Try <look seagull<6>>.";
@@ -2389,7 +2394,7 @@ on_tick {
           :tutorial "That shipwreck to the south sure looks intriguing. (<look wreck<6>>)";
         }
         :match "look shipwreck; look south" {
-        :tutorial "I'll be much quietier from this point, good luck!";
+        :tutorial "I'll be much quieter from this point, good luck!";
         :tutorial "Type <HELP<6>> at any time to see help with the basics.";
         :increment "tutorial_progress"; // to 4
         }
