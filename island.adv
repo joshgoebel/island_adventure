@@ -39,6 +39,7 @@ on_startup {
   :gosub "auto_music";  
 
   //:goto "beach";
+  //:pocket "chest_key";
   //:pocket "candle";
   //:pocket "matchbook";
 
@@ -56,7 +57,8 @@ on_startup {
 
   //:goto "village_square";
   //:goto "beach";
-  //:goto "western_heights";
+  :goto "western_heights";
+  :pocket "chopped_oak";
   
   //:pocket "msg_bottle";
   //:goto "village_hut";
@@ -1290,7 +1292,7 @@ on_command {
       }
     }
 
-    :match "blow candle" {
+    :match "blow candle; extinguish candle" {
       :if (is_candle_lit) {
         :print "You blow the candle out.";
         :set_false "is_candle_lit";
@@ -1313,7 +1315,7 @@ on_command {
 
   // LOVE LETTERS
 
-  :if (is_beside("love_letters")) {
+  :if (is_present("love_letters")) {
     :match "read letters; read poetry" {
       :print "You grab a letter and read:";
       :press_any_key;
@@ -1372,42 +1374,53 @@ on_command {
 
    // SIGNAL FIRE
 
-  :if (is_carried("matchbook")) {
-    :if (is_at("western_heights")) {
-      :match "light fire; set fire; start fire; make fire" {
-        :set_integer var ="wood_count" value="0";
-        :if (is_beside("chopped_driftwood")) { :add var="wood_count" value="1"; }
-        :if (is_beside("chopped_oak")) { :add var="wood_count" value="1"; }
-        :if (is_beside("chopped_darkwood")) { :add var="wood_count" value="1"; }
-        :if (is_beside("oar")) { :add var="wood_count" value="1"; }
-        :if (is_beside("broken_oar")) { :add var="wood_count" value="1"; }
-        :if (wood_count < 2) {
-          :print "You'll need at least two sources of wood.";
-          :done;
-        }
-        :if (!is_beside("love_letters") && !is_beside("charts") && !is_beside("moby_book"))
-        {  
-          :print "You'll need some sort of paper to get the fire started.";
-          :done;
-        }
-
-        :if (is_beside("chopped_driftwood")) { :destroy "chopped_driftwood"; }
-        :if (is_beside("chopped_oak")) { :destroy "chopped_oak"; }
-        :if (is_beside("chopped_darkwood")) { :destroy "chopped_darkwood"; }
-        :if (is_beside("oar")) { :destroy "oar"; }
-        :if (is_beside("broken_oar")) { :destroy "broken_oar"; }
-
-        :create "signal_fire";
-        :if (is_beside("love_letters")) { :destroy "love_letters"; }
-        :else_if (is_beside("charts")) { :destroy "charts"; }
-        :else_if (is_beside("moby_book")) { :destroy "moby_book"; }
-        
-        :set_string var="award_name" text="Signal Fire";
-        :gosub "give_award";
-        :done;
-      }  
+  
+  :if (is_at("western_heights")) {
+    :match "place wood" {
+      :drop;
     }
+    :match "light fire; set fire; start fire; make fire; build fire; set fire; burn wood" {
+      :set_integer var ="wood_count" value="0";
+      :if (is_beside("chopped_driftwood")) { :add var="wood_count" value="1"; }
+      :if (is_beside("chopped_oak")) { :add var="wood_count" value="1"; }
+      :if (is_beside("chopped_darkwood")) { :add var="wood_count" value="1"; }
+      :if (is_beside("oar")) { :add var="wood_count" value="1"; }
+      :if (is_beside("broken_oar")) { :add var="wood_count" value="1"; }
+      :if (wood_count < 2) {
+        :if (wood_count == 0) {
+          :print "And burn what? The ashes?";
+        }
+        :print "For a good sized fire you'll need at least two bundles of wood.";
+        :done;
+      }
+      :if (!is_beside("love_letters") && !is_beside("charts") && !is_beside("moby_book"))
+      {  
+        :print "You'll need some sort of paper to get the fire started.";
+        :done;
+      }
+      :if (!is_carried("matchbook")) {
+        :print "You need matches or some way to ignite the fire.";
+        :done;
+      }
 
+      :if (is_beside("chopped_driftwood")) { :destroy "chopped_driftwood"; }
+      :if (is_beside("chopped_oak")) { :destroy "chopped_oak"; }
+      :if (is_beside("chopped_darkwood")) { :destroy "chopped_darkwood"; }
+      :if (is_beside("oar")) { :destroy "oar"; }
+      :if (is_beside("broken_oar")) { :destroy "broken_oar"; }
+
+      :create "signal_fire";
+      :if (is_beside("love_letters")) { :destroy "love_letters"; }
+      :else_if (is_beside("charts")) { :destroy "charts"; }
+      :else_if (is_beside("moby_book")) { :destroy "moby_book"; }
+      
+      :set_string var="award_name" text="Signal Fire";
+      :gosub "give_award";
+      :done;
+    }  
+  }
+
+  :if (is_carried("matchbook")) {
     :match "light fire; set fire; start fire; make fire" {
       :print "Why would you do that here?";
     }
@@ -2732,7 +2745,7 @@ subroutines {
   credits: subroutine {
     :print "^c^<✜ CREDITS ✜<13>>";
     :print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
-    :print "^n^<Testing:<#fc3>> Rhiannon Stanton, Messick Family" ;
+    :print "^n^<Testing:<#fc3>> Rhiannon Stanton, Messick Family, Dee Cooke, " ;
     :print "^n^<Engine:<#fc3>> Adventuron 1.0 (Beta 68j), by Chris Ainsley" ;
     :print "^n^<Fonts:<#fc3>> Antic Slab from <Google Fonts<#369>>[https://fonts.google.com/specimen/Antic+Slab]" ;
     :print "^n^<Music:<#fc3>> Shane Iver of <Silverman Sound Studios<#369>>[https://www.silvermansound.com]" ;
