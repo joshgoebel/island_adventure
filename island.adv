@@ -46,9 +46,9 @@ on_startup {
   //:pocket "spyglass";
   //:goto "shipwreck";
 
-  //:goto "cliffs_e_clearing";
-  //:pocket "red_marble";
-  //:pocket "blue_marble";
+  :goto "cliffs_e_clearing";
+  :pocket "red_marble";
+  :pocket "blue_marble";
   //:goto "quiet_grove";
   //:goto "beach_ww";
   
@@ -57,8 +57,8 @@ on_startup {
 
   //:goto "village_square";
   //:goto "beach";
-  :goto "western_heights";
-  :pocket "chopped_oak";
+  //:goto "western_heights";
+  //:pocket "chopped_oak";
   
   //:pocket "msg_bottle";
   //:goto "village_hut";
@@ -661,25 +661,25 @@ locations {
 
     }
     on_command {
-        :match "sit stone; sit stones" {
-          :print "You sit down for a moment and ponder the life choices that led you to this point...";
+      :match "sit stone; sit stones" {
+        :print "You sit down for a moment and ponder the life choices that led you to this point...";
+      }
+      :match "push boulder" {
+        :print "It's massive.  It doesn't budge.";
+        :if (!has_seen_cliff_steps) {
+            :print "Something seems a little off.";
         }
-        :match "push boulder" {
-          :print "It's massive.  It doesn't budge.";
-          :if (!has_seen_cliff_steps) {
-              :print "Something seems a little off.";
-          }
-        }
-        :match "look cliff; look edge" {
-          :print "You approach the edge and peek.  Seems like a long ways down...";
-        }
-        :match "look circle" {
-          :examine "circle_stones";
-        }
-        :match "look boulder" {
-          :print "It's massive.  Looking closer you notice that rough and uneven steps carved into the boulder lead downwards.";
-          :set_true "has_seen_cliff_steps";
-        }
+      }
+      :match "x cliff; x edge" {
+        :print "You approach the edge and peek.  Seems like a long ways down...";
+      }
+      :match "x circle" {
+        :examine "circle_stones";
+      }
+      :match "x boulder" {
+        :print "It's massive.  Looking closer you notice that rough and uneven steps carved into the boulder lead downwards.";
+        :set_true "has_seen_cliff_steps";
+      }
     }
   };
 
@@ -978,8 +978,8 @@ objects {
     msg="In the middle of the clearing is a statue of a massive wolf, every bit as tall as you.  Strangely, it appears to be missing its eyes.";
   wolf_statue3: scenery  "wolf statue" noun="statue"
     msg="In the middle of the clearing is a statue of a massive wolf, every bit as tall as you. Its eyes are a dull gold color.";
-  wolf_statue4: scenery  "crumbled statue" noun="statue"
-    msg="The crumbled remains of a statue litter the middle of the clearing.";
+  crumbled_statue: scenery  "crumbled statue" noun="statue"
+    msg="The crumbled remains of the statue litter the clearing.";
   circle_stones: scenery  "circle of stones" msg="Two dozen large stones each the size of your head form a circle around the statue." at="cliffs_e_clearing";
 
   // sunken ship
@@ -1019,7 +1019,6 @@ vocabulary {
    :noun / aliases = [matchbook, matches, match]
    :noun / aliases = [bonfire, fire]
    :noun / aliases = [marble, marbles, eye, eyes]
-   :noun / aliases = [statue, wolf]
    :noun / aliases = [flowers, flower]
    :noun / aliases = [shipwreck, wreck, ship]
    :noun / aliases = [ocean, sea, waves]
@@ -1208,6 +1207,7 @@ barriers {
 // V = Village
 
 on_command {
+  :gosub "sentence_rewriting";
 
   :if (inputs() > 2) {
     :print "This game requires only two word inputs.";
@@ -1489,7 +1489,7 @@ on_command {
 
    :if (is_present("wolf")) {
       :match "look wolf" {
-        :examine "wolf";
+        :examine;
         :print "<The wolf matches your stare until you look away.<13>>";
       }
       //:match "ask wolf" {
@@ -1509,7 +1509,14 @@ on_command {
    // WOLF STATUS - COMES TO LIFE
 
   :if (is_present("wolf_statue") || is_present("wolf_statue2") || is_present("wolf_statue3")) {
-    :match "touch statue" {
+    // we need to alias wolf -> status before the wolf has arrived just to be nice
+    :match "look wolf" {
+      :if (is_present("wolf_statue")) { :examine "wolf_statue"; }
+      :if (is_present("wolf_statue2")) { :examine "wolf_statue2"; }
+      :if (is_present("wolf_statue3")) { :examine "wolf_statue3"; }
+      :done;
+    }
+    :match "touch statue; pet wolf; touch wolf" {
       :print "The stone is smooth, yet also somehow... lifelike...?";
       :print "...as if you're feeling real fur, petting an actual wolf.";
       :done;
@@ -1524,14 +1531,27 @@ on_command {
       }
       :match "insert eyes; place eyes; add eyes; put eyes; fill sockets; complete statue" {
         :if (is_present("red_marble") && is_present("blue_marble")) {
-          :print "The stone eyes lock into place and their color fades to a dull shade of gold.";
-          :print "<You feel as if you’re being watched.<13>>";
+          :print "The stone eyes snap into place; their colors fading to a dull gold.";
+          :print "<You imagine you feel powerful energies swirling about you.<13>>";
+          :press_any_key;
+          :print "The statue appears to be tensing it's muscles.";
+          :press_any_key;
+          :print "Suddenly the statue explodes into a cloud of dust and rubble, throwing you backwards...";
+          :press_any_key;
+          :print "...from inside the cloud two bright, <golden<#fc3>> eyes stare out at you...";
+          :press_any_key;
+
           :destroy "wolf_statue"; 
           :destroy "wolf_statue2"; 
-          :create "wolf_statue3";
+          :destroy "wolf_statue3";
+          :create "crumbled_statue"; // crumbled statue
+          :create "wolf" target="cliffs_e_clearing";
+
           :destroy "blue_marble";
           :destroy "red_marble";
           :set_true "is_wolf_awake";
+          :set_true "has_seen_wolf";
+          
         // we have either, but not both
         } :else_if (is_present("red_marble") || is_present("blue_marble")) {
           :print "<You imagine you hear a howl in the distance.<13>>";
@@ -2280,7 +2300,7 @@ on_tick {
   // ****************
   //  chase the wolf
 
-  :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() >= 3 ) {
+  :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() >= 3 && false ) {
     :print "<The wolf looks at you, then darts off to the north<13>>";
     :destroy "wolf";
     :create "wolf" target="cliffs_e";
@@ -2295,26 +2315,14 @@ on_tick {
   }
 
   :if (is_present("wolf") && is_at("jungle_ee")) {
-    :print "<The wolf gazes off into the jungle then back, as if asking you to follow.<13>>";
-  }
-   
-  // wolf
-
-  :if (is_wolf_awake && !has_seen_wolf && is_at("cliffs_e_clearing") && linger() > 7) {
-    :print "You imagine you hear a noise to the north.";
-  }
-
-  :if (is_at "cliffs_e") {
-    :if (is_wolf_awake && ! has_seen_wolf) {
-      :print "You're certain you hear a loud crash to the south.";
-      :destroy "wolf_statue3";
-      :create "wolf_statue4" target="cliffs_e_clearing";
-      :create "wolf" target="cliffs_e_clearing";
-      :press_any_key;
+    :if (linger() >= 3) {
+      :print "<The wolf gazes off into the jungle then back, as if asking you to FOLLOW.<13>>";
+    } :else {
+      :print "<The wolf gazes off into the jungle then back, as if asking you to follow.<13>>";
     }
   }
 
-   :set_string var = "lost_jungle_desc"  text = "Wind whistles thru the branches." ;
+  :set_string var = "lost_jungle_desc"  text = "Wind whistles thru the branches." ;
 
   // TODO: fix jungle text?????
   :if (is_just_entered() ) {
@@ -2934,6 +2942,12 @@ subroutines {
     :collection_push { collection = "awards" content -> (award_name) };
     :print "<Achievement<2>>: {award_name}";
     :success;
+  }
+
+  sentence_rewriting: subroutine {
+    //:if (noun1_is("wolf") && is_present("crumbled_statue")) {
+    //  :set_sentence "$1 statue" ;
+    //}
   }
 
   wearing: subroutine {
