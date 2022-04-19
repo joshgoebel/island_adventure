@@ -33,7 +33,7 @@ on_startup {
 
 //  :gosub "title_screen";
 //  :gosub "ask_fantasy_violence";
-//  :gosub "ask_tutorial";
+  :gosub "ask_tutorial";
   :gosub "bootup";
 
   :gosub "auto_music";  
@@ -46,9 +46,9 @@ on_startup {
   //:pocket "spyglass";
   //:goto "shipwreck";
 
-  :goto "cliffs_e_clearing";
-  :pocket "red_marble";
-  :pocket "blue_marble";
+  //:goto "cliffs_e_clearing";
+  //:pocket "red_marble";
+  //:pocket "blue_marble";
   //:goto "quiet_grove";
   //:goto "beach_ww";
   
@@ -60,10 +60,12 @@ on_startup {
   //:goto "western_heights";
   //:pocket "chopped_oak";
   
+  //:goto "cliffs_e_clearing";
   //:pocket "msg_bottle";
   //:goto "village_hut";
   //:pocket "oar";
   //:create "wolf";
+  //:goto "cliffs_e_clearing";
 }
 
 
@@ -87,7 +89,7 @@ strings {
   //treasure_score: string "{until_wave}";
   header_text : dynamic_string { ( "<" + h() + "<5>>")} ;
   //status_prompt : dynamic_string { (has_status ? status : blank) }
-  status_prompt : dynamic_string {( "[]:" )}
+  status_prompt : dynamic_string {( "[]: " )}
 
   // changes after one sees the statue and gets the idea these might be eyes
   reminds_of_eye : dynamic_string {( " with dark veins running thru it" )}
@@ -109,6 +111,7 @@ booleans {
   never: boolean "false";
   has_status: boolean "false";
   fantasy_violence_ok: boolean "false";
+  has_set_initial_thirst: boolean "false";
 
   // system
   is_sound_muted: boolean "false";
@@ -146,27 +149,26 @@ booleans {
 }
 
 integers {
-   tmp_int: integer "0";
+  tmp_int: integer "0";
+  max_achievements: integer "17";
+  inventory_limit: integer "15" ;
+  
+  number_of_stones: integer "89";
 
-   inventory_limit: integer "15" ;
-   max_achievements: integer "20";
-   number_of_stones: integer "89";
+  until_wave: integer "0";
+  dream_counter : integer "0";
+  thirst: integer "0";
+  hunger: integer "0";
+  lost_jungle_counter: integer "0";
+  oar_hit_chest_count: integer "0";
+  tutorial_progress: integer "0";
+  wood_count: integer "0";
 
-   until_wave: integer "0";
-   dream_counter : integer "0";
-   thirst: integer "0";
-   hunger: integer "0";
-   lost_jungle_counter: integer "0";
-   oar_hit_chest_count: integer "0";
-   tutorial_progress: integer "0";
-   wood_count: integer "0";
+  kill_chance: integer "0";
 
-   side_quests_complete: integer "0";
-   kill_chance: integer "0";
-
-   total_inputs: integer "0";
-   total_looks: integer "0";
-   total_rooms: integer "0";
+  total_inputs: integer "0";
+  total_looks: integer "0";
+  total_rooms: integer "0";
 }
 
 collections {
@@ -355,7 +357,7 @@ locations {
   beach_ee: location "A beach of beautiful white sand." header="Southern Shore";
   beach_ww_rocky: location "A small crevice disappears downwards into the rock." header="Rocky Outcropping" {
     on_command {
-      :match "go crevice; enter crevice" {
+      :match "go crevice; enter crevice; wiggle crevice" {
         :goto "beach_ww_cave";
       }
     }
@@ -409,6 +411,7 @@ locations {
         };
         :match "look *; examine *" {
           :print "You can't see anything from how you're laying but sand.";
+          :done;
         }
         :match "s _" { :print "How? Swim?  Perhaps another day.";};
         :match "spit _" { :print "You spit out some sand. You're very thirsty."; };
@@ -425,8 +428,10 @@ locations {
 
           :print "Some time later...";
           :press_any_key ;
-
-          :set_integer var="thirst" value="75";
+          :if (!tutorial_on) {
+            :set_true "has_set_initial_thirst";
+            :set_integer var="thirst" value="75";
+            }
           :goto "beach";
         }
     }
@@ -438,6 +443,11 @@ locations {
       :match "get fruit; get fabric; look fruit; look fabric" {
         :print "It's far too old and decayed to be of any use.";
       }
+      :match "x ghost" {
+        :print "No ghosts here.";
+        :set_string var="award_name" text="Ghost Busters";
+        :gosub "give_award";
+      }
       :match "drop stone; drop pebble; drop rock" {
         :print "You find a small pebble nearby and drop it into the well.  You hear a splash.";
         :set_string var="award_name" text="Wishing Well";
@@ -445,16 +455,28 @@ locations {
       }
     }
   }
-  village_n: location "To the north stands a large hut." header="Village";
+  village_n: location "To the north stands a large hut." header="Village" {
+    on_command {
+      :match "go hut" {
+        :goto "village_hut";
+      }
+    }
+  }
   village_s: location "Small huts surround both sides of the street." header="Village";
   village_e: location "Small huts surround both sides of the street." header="Village";
   village_w: location "Small huts surround both sides of the street." header="Village";
-  village_hut: location "This hut is homey, yet spacious - larger than the others. A layer of dust covers everything." header="Village, Elder's Hut" {
+  village_hut: location "This hut is homey, yet spacious - larger than the others. A thick layer of dust covers everything." header="Village, Elder's Hut" {
     on_command {
+      :match "x dust" {
+        :print "You swipe your finger across the top of a surface.  Yep, dusty.";
+      }
       :match "enter fireplace" {
         :print "It's small and you wouldn't fit.  You don't possess the Christmas magics.";
         :set_string var="award_name" text="Jolly Old St. Nicholas";
         :gosub "give_award";
+      }
+      :match "sit bed" {
+        :print "It's more comfortable than you expected.";
       }
       :match "sleep bed" {
         :print "Ok, but just a quick nap...";
@@ -493,10 +515,13 @@ locations {
   jungle_n: location "{jungle_room_description}" header ="Jungle";
   jungle_nw: location "{jungle_room_description}" header ="Jungle";
   jungle_exit: location "{jungle_room_description}" header ="Jungle";
-  village: location "There is a small village here." header="Lowlands" {
+  lowlands: location "There is a small village here." header="Lowlands" {
     on_command {
+      :match "go village" {
+        :goto "village_s";
+      }
       :match "look village" {
-        :print "Appears to be a small, primitive village, but it's too quiet.  You'll need to enter to learn more.";
+        :examine;
       }
     }
   }
@@ -615,17 +640,10 @@ locations {
         }
     }
   }
-  cliffs_e: location "The jungle ends abruptly with a two-hundred foot plunge to rocky shores below. There is no obvious way down." header="Eastern Cliffs" {
-    on_command {
-      :match "look shores" {
-        :print "Rocky.";
-      }
-    }
-  };
   cliffside_east: location "A three foot wide ledge, perhaps long enough that you could lay down, perhaps not. Vines cover much of the cliff face." header="Eastern Cliffs, Ledge" {
   on_command {
-        :match "look vine; look vines" {
-          :print "As thick as your arm, they sure look sturdy.";
+        :match "x vine; x vines" {
+          :print "As thick as your arm.";
         }
         :match "swing vines; swing vine" {
           :print "Are you Tarzan now? Perhaps you might climb them though.";
@@ -656,6 +674,16 @@ locations {
     }
   };
   
+  cliffs_e: location "The jungle ends abruptly with a two-hundred foot plunge to rocky shores below. There is no obvious way down." header="Eastern Cliffs" {
+    on_command {
+      :match "look shores" {
+        :print "Rocky.";
+      }
+      :match "x cliff; x edge; x plunge; x down" {
+        :print "You approach the edge and peek.  Seems like a long ways down...";
+      }
+    }
+  };
   cliffs_e_clearing: location "You stand in a large clearing, bordered by dense jungle to the west. A huge boulder clings resolutely to the edge of the cliff." header="Eastern Cliffs,  Clearing" {
     on_tick {
 
@@ -673,11 +701,14 @@ locations {
       :match "x cliff; x edge" {
         :print "You approach the edge and peek.  Seems like a long ways down...";
       }
+      :match "count stones" {
+        :print "24.";
+      }
       :match "x circle" {
         :examine "circle_stones";
       }
       :match "x boulder" {
-        :print "It's massive.  Looking closer you notice that rough and uneven steps carved into the boulder lead downwards.";
+        :examine;
         :set_true "has_seen_cliff_steps";
       }
     }
@@ -874,6 +905,8 @@ objects {
   kettle: scenery "a kettle" msg="A large kettle hangs over the fireplace, smells like grandma's chili." at="village_hut";
   fireplace: scenery "a fireplace" msg="Looks like it hasn't been used in many years." at="village_hut";
   tome: object "a tome" msg="A large book, very old." at="village_hut";
+  village: scenery "village" msg="Appears to be a small, primitive village, but it's too quiet.  You'll need to enter to learn more." at="lowlands";
+  elder_hut: scenery "large hut" msg="The hut before you is larger than the rest, but otherwise similar." at="village_n";
 
   // western_heights_dream
   wounded_wolf: scenery "<wolf<#c6c>>" at="western_heights_dream" msg="The large creature is bound upon the altar and appears injured. It looks towards you, or is that merely your imagination?";
@@ -885,7 +918,7 @@ objects {
   moon: scenery "moon" at="western_heights_dream" msg="A full moon; you swear it looms larger than usual." conspicuous="false";
   moonlight: scenery "moonlight" at="western_heights_dream" msg="The moonlight feels as if it carries a slight chill." conspicuous="false";
   d_sea: scenery "sea" at="western_heights_dream" msg="A stormy sea swirls and churns far below." conspicuous="false";
-  blazing_bonfire: scenery "huge bonfire" at="western_heights_dream" msg="A massive bonfire lights the night, yet provides no warmth.";
+  blazing_bonfire: scenery "raging bonfire" at="western_heights_dream" msg="A massive bonfire lights the night, yet provides no warmth.";
 
   // western heights
   charred_ashes: scenery "charred ashes" at="western_heights" msg="Appears to be the remains of a large bonfire from many moons ago. This would be the perfect spot to build a signal fire.";
@@ -913,6 +946,7 @@ objects {
   d_plank: scenery "plank" at="dream_ship" msg="You've seen plenty walk it.";
   d_mast: scenery "mast" at="dream_ship" msg="It extends upwards into the dark night. You know someone is manning the crow's nest, but don't envy them.";
   
+  vines: scenery "vines" at="cliffside_east" msg="As thick as your arm.";
   medallion: object "a silver medallion" msg="It's attached to leather cordage and seems cold to the touch." get_message = "You suddenly feel luckier." wearable="true" at ="cliffside_east";
 
   // wolf eyes
@@ -972,6 +1006,8 @@ objects {
   treasure_metals: scenery "metals" at="cliffs_e_cave_rear" conspicuous="false" msg="Gold, silver, moonstone...";
 
   // jungle
+  boulder: scenery "boulder" at="cliffs_e_clearing" 
+    msg="It's massive.  Looking closer you notice that rough and uneven steps carved into the boulder lead downwards.";
   wolf_statue: scenery  "statue" at="cliffs_e_clearing" 
     msg="In the middle of the clearing is a statue of a massive wolf, every bit as tall as you.  Strangely, it appears to be missing its eyes.";
   wolf_statue2: scenery  "wolf statue" noun="statue"
@@ -1058,7 +1094,7 @@ connections {
     beach_w, west, beach_ww,
 
     // village
-    village,enter,village_s
+    lowlands,enter,village_s
     village_square,north, village_n
     village_square,east, village_e
     village_square,south, village_s
@@ -1084,9 +1120,9 @@ connections {
     quiet_grove,south, jungle_ww 
     south_of_grove,north,burnt_grove
 
-    jungle_exit,west,village
+    jungle_exit,west,lowlands
     jungle_ee,east,cliffs_e
-    village,west,sloping_hills
+    lowlands,west,sloping_hills
     sloping_hills,west,western_heights
     cliffs_e,south,cliffs_e_clearing
     cliffside_east,up, cliffs_e_clearing
@@ -1253,6 +1289,10 @@ on_command {
 
   :match "tutorial off" {
     :set_false "tutorial_on";
+    :if (!has_set_initial_thirst) {
+      :set_true "has_set_initial_thirst";
+      :set_integer var="thirst" value="75";    
+    }
     :tutorial "Tutorial turned off.";
     :done;
   }
@@ -1266,12 +1306,13 @@ on_command {
   // VILLAGE
 
   :if (is_at("village_zone")) {
-    :if (is_at("village_hut")) {
-      :print "Larger than the others, otherwise similar.";
-      :done;
-    }
     :match "look hut; look huts" {
-      :print "The huts appear to be made of a mixtures of straw, mud, and stone.";
+    :print "The huts appear to be made of a mixtures of straw, mud, and stone.";
+      :if (is_at("village_n")) {
+        :examine;
+        //:print "The hut before you is larger than the rest, but otherwise similar.";
+        :done;
+      }
     }
     :match "knock huts" {
       :print "No one is home.";
@@ -1625,7 +1666,11 @@ on_command {
           :store_random var = "tmp_int";
           //:print {( tmp_int + "  " + kill_chance )};
           :if (kill_chance < tmp_int) {
-            :add var="kill_chance" value="5";
+            :if (is_worn("medallion")) {
+              :add var="kill_chance" value="10";
+            } :else {
+              :add var="kill_chance" value="5";
+            }
             :append "...and miss. ";
             :failure;
             :cycle key = "knife_misses" predictable_order = "false" skip_interval = "0"  {
@@ -2038,7 +2083,7 @@ on_command {
    // PILE OF STONES
 
   :if(is_present "pile_stones") {
-    :match "look stone" {
+    :match "x stone" {
       :if (!is_carried("stone")) {
         :print "You examine one stone.  It's a rock.";
       }
@@ -2274,8 +2319,8 @@ on_tick {
 
   // more prominence to wearing
   :match "x _" {
-    :if (is_worn(s1())) {
-      :print "^n^(you are wearing)";
+    :if (is_worn(s1()) && !is_at("washedashore")) {
+      :print "(you are wearing)";
     }
   }
 
@@ -2300,7 +2345,7 @@ on_tick {
   // ****************
   //  chase the wolf
 
-  :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() >= 3 && false ) {
+  :if (is_present("wolf") && is_at("cliffs_e_clearing") && linger() >= 3) {
     :print "<The wolf looks at you, then darts off to the north<13>>";
     :destroy "wolf";
     :create "wolf" target="cliffs_e";
@@ -2481,9 +2526,9 @@ on_tick {
           :tutorial "That shipwreck to the south sure looks intriguing. (<look wreck<6>>)";
         }
         :match "look shipwreck; look south" {
-        :tutorial "I'll be much quieter from this point, good luck!";
-        :tutorial "Type <HELP<6>> at any time to see help with the basics.";
-        :increment "tutorial_progress"; // to 4
+          :tutorial "I'll be much quieter from this point, good luck!";
+          :tutorial "Type <HELP<6>> at any time to see help with the basics.";
+          :increment "tutorial_progress"; // to 4
         }
         :match "inventory _" {
           :tutorial "Notice that some items can also be worn, such as pants.";
@@ -2495,6 +2540,8 @@ on_tick {
     :if (is_at "waters_edge" && is_just_entered() && tutorial_progress==3) {
         :tutorial "Since we just went south, going from here north would return us to the beach. First lets have a <look<6>> around.\n";
     }
+
+    
   }
 
    // TUTORIAL
@@ -2505,7 +2552,12 @@ on_tick {
    // [x] two word parser
 
 
-
+  :if (!is_at("waters_edge") && !is_at("beach") && !is_at("washedashore")) {
+    :if (!has_set_initial_thirst) {
+      :set_true "has_set_initial_thirst";
+      :set_integer var="thirst" value="75";
+    }
+  }
  
 
    // dream & intro
@@ -2640,7 +2692,6 @@ subroutines {
     :if (cutsceen_plant_acorn_seen) { :done; }
     :set_true "cutsceen_plant_acorn_seen";
 
-    :print "^c^---";
     :print "<You suddenly remember the acorn.<13>>";
     :press_any_key;
     :print "Kneeling down you dig a small hole and gently plant the acorn.";
@@ -2695,6 +2746,7 @@ subroutines {
     //:pause millis = "2000" ;
     :print "<The wizard laughs maniacally.<13>>";
     :press_any_key;
+    :clear_screen;
 
     :print "❝A pet human?  How very foolish. ";  
     //:pause millis = "3000" ;
@@ -2708,6 +2760,7 @@ subroutines {
     //:pause millis = "3000" ;
     :print "<The wizard raises his bloodwood staff.<13>>";
     :press_any_key;
+    :clear_screen;
 
     :print "“What began long ago.  Hodie est complevit!”";
     :print "<The wizard recites words of power.<13>>";
@@ -2753,7 +2806,7 @@ subroutines {
   credits: subroutine {
     :print "^c^<✜ CREDITS ✜<13>>";
     :print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
-    :print "^n^<Testing:<#fc3>> Rhiannon Stanton, Messick Family, Dee Cooke, " ;
+    :print "^n^<Testing:<#fc3>> Rhiannon Stanton, Messick Family, Dee Cooke, <Tristin Grizel Dean<#369>>[https://grizel.itch.io/]" ;
     :print "^n^<Engine:<#fc3>> Adventuron 1.0 (Beta 68j), by Chris Ainsley" ;
     :print "^n^<Fonts:<#fc3>> Antic Slab from <Google Fonts<#369>>[https://fonts.google.com/specimen/Antic+Slab]" ;
     :print "^n^<Music:<#fc3>> Shane Iver of <Silverman Sound Studios<#369>>[https://www.silvermansound.com]" ;
@@ -2866,7 +2919,7 @@ subroutines {
     :if (thirst > 50) {
       :set_true "has_status";
       :set_string var="status"  {(
-        status + "<thirsty<2>>"
+        status + "<thirsty<7>>"
       )}
     }
     :if (hunger > 50) {
@@ -2874,7 +2927,7 @@ subroutines {
         :set_string var="status"  {( status + " " )}
       }
       :set_true "has_status";
-      :set_string var="status" {( status + "<hungry<2>>" )}
+      :set_string var="status" {( status + "<hungry<7>>" )}
     }
   }
 
