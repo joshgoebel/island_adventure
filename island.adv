@@ -2008,14 +2008,14 @@ on_command {
       }
    }
 
-   // :match "inv _" {
-   //    :inventory;
-   //    // buffs
-   //    :append "buffs: ";
-   //    :if (is_worn("medallion")) {
-   //    :print "<luck<12>>";
-   //    }
-   // }
+   :match "inv _" {
+      :inventory;
+      // buffs
+      :if (is_worn("medallion")) {
+      :append "buffs: ";
+      :print "<luck<12>>";
+      }
+   }
 
   // THE MEDALLION
 
