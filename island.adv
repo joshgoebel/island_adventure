@@ -345,17 +345,17 @@ locations {
   }
 
   // beach
-  beach: location "A beach of beautiful white sand extends along the shoreline to the east and west.  Further to the north is the jungle." header="Southern Shore" {
+  beach: location "A beach of beautiful white sand extends along the shoreline to the east and west.  Further to the north is the jungle." header="Southern Coast" {
     on_command {
       :match "search debris" {
         :examine;
       }
     }
   };
-  beach_w: location "A beach of beautiful white sand." header="Southern Shore";
-  beach_ww: location "A beach of beautiful white sand. There is a rocky outcropping to the north." header="Southern Shore";
-  beach_e: location "A beach of beautiful white sand." header="Southern Shore";
-  beach_ee: location "A beach of beautiful white sand." header="Southern Shore";
+  beach_w: location "A beach of beautiful white sand." header="Southern Coast";
+  beach_ww: location "A beach of beautiful white sand. There is a rocky outcropping to the north." header="Southern Coast";
+  beach_e: location "A beach of beautiful white sand." header="Southern Coast";
+  beach_ee: location "A beach of beautiful white sand." header="Southern Coast";
   beach_ww_rocky: location "A small crevice disappears downwards into the rock." header="Rocky Outcropping" {
     on_command {
       :match "go crevice; enter crevice; wiggle crevice" {
