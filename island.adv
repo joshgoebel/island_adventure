@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.0" # not yet releasted
+__game_version = "1.0.1" # not yet releasted
 
 
 start_at = washedashore
@@ -32,7 +32,7 @@ on_startup {
   :set_false "tutorial_on";
 
   //:gosub "title_screen";
-//  :gosub "ask_fantasy_violence";
+  :gosub "ask_fantasy_violence";
   :gosub "ask_tutorial";
   :gosub "bootup";
 
@@ -42,7 +42,7 @@ on_startup {
   //:pocket "chest_key";
   //:pocket "candle";
   //:pocket "matchbook";
-  :pocket "medallion";
+  //:pocket "medallion";
 
   //:pocket "spyglass";
   //:goto "shipwreck";
@@ -2261,9 +2261,11 @@ on_command {
     :done;
   }
 
-   // mend, fix, repair
-   
+  // version
 
+  :match "version -" {
+    :print "v$${__game_version}";
+  }
 
    // fun utils
 
