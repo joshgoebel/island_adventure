@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "0.9.0" # not yet releasted
+__game_version = "1.0.0" # not yet releasted
 
 
 start_at = washedashore
@@ -31,7 +31,7 @@ on_startup {
   :set_theme "main_theme";
   :set_false "tutorial_on";
 
-//  :gosub "title_screen";
+  //:gosub "title_screen";
 //  :gosub "ask_fantasy_violence";
   :gosub "ask_tutorial";
   :gosub "bootup";
@@ -151,7 +151,7 @@ booleans {
 
 integers {
   tmp_int: integer "0";
-  max_achievements: integer "17";
+  max_achievements: integer "18";
   inventory_limit: integer "15" ;
   
   number_of_stones: integer "89";
@@ -2297,6 +2297,28 @@ on_command {
     }
   }
 
+  //:match "wiz end" {
+  //  :gosub "cutsceen_grove_destroy";
+  //}
+  //
+  //:match "cheat wiz_cutscene" {
+  //  :gosub "cutsceen_grove_destroy";
+  //  :done;
+  //}
+  //:match "cheat win" {
+  //  :gosub "win_game"; 
+  //  :done;
+  //}
+  //:match "cheat plant" {
+  //  :gosub "cutsceen_plant_acorn";
+  //  :done;
+  //}
+
+  //:match "success _" {
+  //  :success;
+  //  :done;
+  //}
+
 } /* end of global on_command */
 
 // on_describe {
@@ -2619,27 +2641,6 @@ on_tick {
   :gosub "track_input_stats";
   :gosub "update_status_effects";
 
-  :match "wiz end" {
-    :gosub "cutsceen_grove_destroy";
-  }
-
-  :match "cheat wiz_cutscene" {
-    :gosub "cutsceen_grove_destroy";
-    :done;
-  }
-  :match "cheat win" {
-    :gosub "win_game"; 
-    :done;
-  }
-  :match "cheat plant" {
-    :gosub "cutsceen_plant_acorn";
-    :done;
-  }
-
-  :match "success _" {
-    :success;
-  }
-
   :if (is_present("burnt_tree")) {
     :match "look tree; touch tree" {
       :gosub "cutsceen_plant_acorn";
@@ -2800,19 +2801,16 @@ subroutines {
    :print "\n";
   }
 
-  endgame_credits : subroutine {
-    :gosub "credits";
-  }
-
   credits: subroutine {
     :print "^c^<✜ CREDITS ✜<13>>";
     :print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
     :print "^n^<Testing:<#fc3>> Rhiannon Stanton, Messick Family, Dee Cooke, <Tristin Grizel Dean<#369>>[https://grizel.itch.io/]" ;
     :print "^n^<Engine:<#fc3>> Adventuron 1.0 (Beta 68j), by Chris Ainsley" ;
-    :print "^n^<Fonts:<#fc3>> Antic Slab from <Google Fonts<#369>>[https://fonts.google.com/specimen/Antic+Slab]" ;
+    :print "^n^<Font:<#fc3>> Antic Slab from <Google Fonts<#369>>[https://fonts.google.com/specimen/Antic+Slab]" ;
     :print "^n^<Music:<#fc3>> Shane Iver of <Silverman Sound Studios<#369>>[https://www.silvermansound.com]" ;
     :print "^n^<Songs:<#fc3>> Fantasy Overture, Helena's Lament, Janus Turning, Underglow, Zen Garden, I Domine";
-    :print "^c^^n^© 2022 Josh Goebel.\nNot for commercial use. Do not redistribute." ;
+    :print "<Cover Photo:<#fc3>> \"Castaway on a tropical island\" from <Unsplash<#369>>[https://unsplash.com/photos/U6t80TWJ1DM]."; 
+    :print "^c^© 2022 Josh Goebel.\nNot for commercial use. Do not redistribute." ;
   }
 
   the_end: subroutine {
@@ -2837,8 +2835,13 @@ subroutines {
     :gosub "post_game";
   }
 
+  endgame_credits : subroutine {
+    :gosub "credits";
+  }
+
   post_game : subroutine {
     :goto "reception";
+    //:redescribe;
   }
 
   help: subroutine {
@@ -2899,10 +2902,11 @@ subroutines {
   }
 
   title_screen: subroutine {
+    //:print_graphic "loading_graphic" width="50";
     :print "<$${__game_name}<#fc3>>\nv$${__game_version}";
     :print "by Josh Goebel";
     :print "© 2022";
-    :print "^r^(little yellow wiggly\n means press enter)";
+    :print "^r^(little yellow wiggly means\n click or press enter)";
     :press_any_key;
   }
 
