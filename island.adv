@@ -31,7 +31,7 @@ on_startup {
   :set_theme "main_theme";
   :set_false "tutorial_on";
 
-  //:gosub "title_screen";
+  :gosub "title_screen";
   :gosub "ask_fantasy_violence";
   :gosub "ask_tutorial";
   :gosub "bootup";
@@ -2917,11 +2917,10 @@ subroutines {
   }
 
   title_screen: subroutine {
-    //:print_graphic "loading_graphic" width="50";
-    :print "<$${__game_name}<#fc3>>\nv$${__game_version}";
-    :print "by Josh Goebel";
-    :print "© 2022";
-    :print "^r^(little yellow wiggly means\n click or press enter)";
+    :print "^c^<$${__game_name}<#fc3>>";
+    :print "^c^© 2022 Josh Goebel <|<#555>> Created for TALP Jam 2022";
+    :print "^c^Version $${__game_version} <|<#555>> Adventuron 1.0 (Beta 68j)";
+    :print "\n\n^c^^n^<(the little yellow wiggly means\n to click or press enter)<5>>";
     :press_any_key;
   }
 
