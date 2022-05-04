@@ -38,6 +38,8 @@ on_startup {
 
   :gosub "auto_music";  
 
+  //:goto "village_n";
+
   //:goto "beach";
   //:pocket "chest_key";
   //:pocket "candle";
@@ -1037,7 +1039,7 @@ objects {
 
 vocabulary {
    :verb / aliases = [exit, leave]
-   :verb / aliases = [look, l]
+   :verb / aliases = [look, l, x]
    :verb / aliases = [spy, spyglass]
    :verb / aliases = [touch, feel]
    :verb / aliases = [talk, speak, greet]
