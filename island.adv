@@ -1251,26 +1251,37 @@ on_command {
     :done;
   }
 
+  :match "verbs -" {
+    :gosub "help";
+    :print "There are other verbs, but you'll have to discover them on your own.";
+  }
+
+  :match "hint _" {
+    :print "There are no contextual hints, but I offer one key piece of advice:\n\n";
+    :print "^c^There is much to see, some of it <vital<2>>, so...\n<Examine, examine, examine.<5>> ";
+  }
+
+
   :match "help -" { :gosub "help"; }
 
   // HELP FOR USE *
 
-  :match "cheat map" {
-    :print "^n^\s        VVV  J  -  J  -  J - J - E";
-    :print "^n^\s         V   |           |       |";
-    :print "^n^\s W - . - . - J           J       E";
-    :print "^n^\s                         |";
-    :print "^n^\s                 J - J - J ";
-    :print "^n^\s                         |";
-    :print "^n^\s                 B - B - B - B - B";
-    :print "^n^\s                         |";
-    :print "^n^\s                       Wreck ";
-    :print "^n^\sJ = Jungle";
-    :print "^n^\sB = Beach";
-    :print "^n^\sW = Western Heights";
-    :print "^n^\sE = Eastern Cliffs";
-    :print "^n^\sV = Village";
-  }
+  //:match "cheat map" {
+  //  :print "^n^\s        VVV  J  -  J  -  J - J - E";
+  //  :print "^n^\s         V   |           |       |";
+  //  :print "^n^\s W - . - . - J           J       E";
+  //  :print "^n^\s                         |";
+  //  :print "^n^\s                 J - J - J ";
+  //  :print "^n^\s                         |";
+  //  :print "^n^\s                 B - B - B - B - B";
+  //  :print "^n^\s                         |";
+  //  :print "^n^\s                       Wreck ";
+  //  :print "^n^\sJ = Jungle";
+  //  :print "^n^\sB = Beach";
+  //  :print "^n^\sW = Western Heights";
+  //  :print "^n^\sE = Eastern Cliffs";
+  //  :print "^n^\sV = Village";
+  //}
 
   :match "use *" {
     :print "Objects may not be \"used\". Please try a different verb/noun.";
