@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.1" # not yet releasted
+__game_version = "1.0.2" # not yet releasted
 
 
 start_at = washedashore
