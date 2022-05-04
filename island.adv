@@ -1253,6 +1253,11 @@ on_command {
     :done;
   }
 
+  :match "x me" {
+    :print "You've never been the sharpest dresser, but your current state of affairs... a bit too disheveled, even for your own tastes.";
+    :print "...at least you seem to still be all in one piece.";
+  }
+
   :match "verbs -" {
     :gosub "help";
     :print "There are other verbs, but you'll have to discover them on your own.";
