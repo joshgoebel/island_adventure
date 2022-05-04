@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.2" # not yet releasted
+__game_version = "1.0.3" # not yet releasted
 
 
 start_at = washedashore
@@ -1251,6 +1251,11 @@ on_command {
   :if (inputs() > 2) {
     :print "This game requires only two word inputs.";
     :done;
+  }
+
+  :match "look -; l -" {
+    :clear_screen;
+    :describe;
   }
 
   :match "x me" {
