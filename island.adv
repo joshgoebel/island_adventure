@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.4"
+__game_version = "1.0.5"
 
 
 start_at = washedashore
@@ -1269,8 +1269,9 @@ on_command {
   }
 
   :match "hint _" {
-    :print "There are no contextual hints, but I offer one key piece of advice:\n\n";
+    :print "There are no in-game contextual hints, but one piece of advice:\n\n";
     :print "^c^There is much to see, some of it <vital<2>>, so...\n<Examine, examine, examine.<5>> ";
+    :print "\n(you'll also find cheats on the <itch.io game page<#369>>[https://ajoshguy.itch.io/forgotten-island], including a full walkthru and secret achievement guide)";
   }
 
 
