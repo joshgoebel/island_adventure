@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.3" # not yet releasted
+__game_version = "1.0.4"
 
 
 start_at = washedashore
@@ -37,8 +37,6 @@ on_startup {
   :gosub "bootup";
 
   :gosub "auto_music";  
-
-  //:goto "village_n";
 
   //:goto "beach";
   //:pocket "chest_key";
@@ -1047,6 +1045,8 @@ vocabulary {
    :verb / aliases = [yell, shout, scream]
    :verb / aliases = [push, shove]
    :verb / aliases = [wait, z]
+   :verb / aliases = [enter, in]
+   :verb / aliases = [exit, out]
 
    // nouns
    :noun / aliases = [pile, stones] // pile of stones
