@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.5"
+__game_version = "1.0.6"
 
 
 start_at = washedashore
@@ -151,7 +151,7 @@ booleans {
 
 integers {
   tmp_int: integer "0";
-  max_achievements: integer "18";
+  max_achievements: integer "16";
   inventory_limit: integer "15" ;
   
   number_of_stones: integer "89";
@@ -867,7 +867,7 @@ locations {
         :match "look water" {
           :print "You wonder what could be hiding beneath the surface.";
         }
-        :match "swim water; check water; feel water; search water" {
+        :match "swim water; check water; feel water; search water; dive water; explore water; go water" {
           :if (has_not_created("chest_key")) {
               :print "You feel around beneath the water and grasp a small object.";
               :print "<you've found:<#777>> key";
