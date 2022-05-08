@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.6"
+__game_version = "1.0.7"
 
 
 start_at = washedashore
@@ -968,7 +968,7 @@ objects {
   knife: object "a knife" at = "waters_edge" msg="It appears quite sharp.";
   oar: object "an oar" at ="beach_w" msg="A long rowboat oar; used for paddling.";
   broken_oar: object "a broken oar"  msg="Broken in half, useless.";
-  coconut_trees: object "coconut trees" at="beach_w" msg="Coconuts are delicious. But they are up too high.";
+  coconut_trees: scenery "coconut trees" at="beach_w" msg="Coconuts are delicious. But they are up too high.";
   coconut: object "a coconut" msg="A delicious coconut.";
   seagull: scenery "seagull" at = "beach" msg="What a beautiful, delicious bird.";
   dead_seagull: scenery "dead seagull" msg="Your stomach rumbles loudly.";
@@ -1036,7 +1036,6 @@ objects {
 }
 
 vocabulary {
-   :verb / aliases = [exit, leave]
    :verb / aliases = [look, l, x]
    :verb / aliases = [spy, spyglass]
    :verb / aliases = [touch, feel]
@@ -1046,7 +1045,7 @@ vocabulary {
    :verb / aliases = [push, shove]
    :verb / aliases = [wait, z]
    :verb / aliases = [enter, in]
-   :verb / aliases = [exit, out]
+   :verb / aliases = [exit, out, leave]
 
    // nouns
    :noun / aliases = [pile, stones] // pile of stones
@@ -1245,14 +1244,17 @@ barriers {
 // E = Eastern Cliffs
 // V = Village
 
-on_command {
+on_pre_command {
   :gosub "sentence_rewriting";
 
   :if (inputs() > 2) {
     :print "This game requires only two word inputs.";
     :done;
   }
+}
 
+on_command {
+  
   :match "look -; l -" {
     :clear_screen;
     :describe;
@@ -1826,15 +1828,6 @@ on_command {
     :done;
   }
 
-  :if (is_present "driftwood") {
-    :match "break wood; cut wood" {
-      :print "If only you had a tool for that...";
-    }
-    :match "get wood; get driftwood" {
-      :print "It's too large to carry as it is.\nYou'd first need to break it into smaller pieces.";
-    }
-  }
-
   // CHOPPING UP WOOD
 
    :if (is_carried "axe") {
@@ -1855,16 +1848,27 @@ on_command {
           :create "chopped_oak";
         }
     }
-    :match "chop wood; split wood; axe wood" {
+    :match "chop wood; split wood; axe wood; break wood; cut wood" {
       :if (is_present "driftwood") {
         :destroy "driftwood";
         :create "chopped_driftwood";
         :print "You chop the wood into smaller pieces.";
+        :done;
+      }
+    }
+  } 
+  :else { // has no axe
+    :if (is_present "driftwood") {
+      :match "break wood; cut wood" {
+        :print "If only you had a tool for that...";
+      }
+      :match "get wood; get driftwood" {
+        :print "It's too large to carry as it is.\nYou'd first need to break it into smaller pieces.";
       }
     }
   }
 
-   // THE LOCKED CHEST
+  // THE LOCKED CHEST
 
   :if (is_present("open_chest")) {
     :match "lock chest; close chest" {
