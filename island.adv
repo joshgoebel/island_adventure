@@ -3,7 +3,7 @@
 ##################################################
 
 __game_name = Forgotten Island
-__game_version = "1.0.7"
+__game_version = "1.0.8"
 
 
 start_at = washedashore
@@ -468,9 +468,6 @@ locations {
   village_w: location "Small huts surround both sides of the street." header="Village";
   village_hut: location "This hut is homey, yet spacious - larger than the others. A thick layer of dust covers everything." header="Village, Elder's Hut" {
     on_command {
-      :match "x dust" {
-        :print "You swipe your finger across the top of a surface.  Yep, dusty.";
-      }
       :match "enter fireplace" {
         :print "It's small and you wouldn't fit.  You don't possess the Christmas magics.";
         :set_string var="award_name" text="Jolly Old St. Nicholas";
@@ -479,7 +476,7 @@ locations {
       :match "sit bed" {
         :print "It's more comfortable than you expected.";
       }
-      :match "sleep bed" {
+      :match "sleep -; sleep bed; nap -; nap bed; lay down; lie down" {
         :print "Ok, but just a quick nap...";
         :print "Zzzz...";
         :press_any_key;
@@ -547,9 +544,13 @@ locations {
           :set_theme "main_theme";
           :gosub "main_music_theme";  
           :goto "western_heights";
+          :done;
         }
         :match "look injury" {
           :print "You're not certain of the injury, but the wolf looks like it's in pain.";
+        }
+        :match "talk *; ask *" {
+          :print "You speak, but no one here is listening save the wind.";
         }
         :match "save wolf; help wolf; free wolf; unbind wolf" {
           :print "The urge to intervene is strong...";
@@ -643,6 +644,9 @@ locations {
   }
   cliffside_east: location "A three foot wide ledge, perhaps long enough that you could lay down, perhaps not. Vines cover much of the cliff face." header="Eastern Cliffs, Ledge" {
   on_command {
+        :match "lie down; lay down" {
+          :print "Just because it looks like you could... doesn't mean it's a great idea.";
+        }
         :match "x vine; x vines" {
           :print "As thick as your arm.";
         }
@@ -698,6 +702,7 @@ locations {
         :if (!has_seen_cliff_steps) {
             :print "Something seems a little off.";
         }
+        :done;
       }
       :match "x cliff; x edge" {
         :print "You approach the edge and peek.  Seems like a long ways down...";
@@ -748,10 +753,10 @@ locations {
         :match "drop _" {
           :print "You can't really drop anything in this place...";
         }
-        :match "north _; south _; up _; east _; west _" {
+        :match "north _; south _; up _; east _; west _; climb mast" {
           :print "You dare not leave your post.";
         }
-        :match "up _" {
+        :match "up _; climb mast" {
           :print "But why in the heck would you want to be up in the air in a storm like this?";
         }
         :match "down _" {
@@ -854,20 +859,33 @@ locations {
         :match "close eyes; give up; wake _" {
           :print "You close your eyes and try to will yourself awake.";
           :set_integer var="until_wave" value="1";
+          :done;
         }
     }
   };
   dream_ship_placeholder: location ""; // fake room for dream ship connections
 
   // shipwreck rooms
-  shipwreck: location "The ship is half sunken, but the skull and crossbones still flies high. To the north is the beach." header="Shipwreck";
-  ship_crowsnest: location "The skull and crossbones still flies proudly in the wind." header="Crow's Nest";
+  shipwreck: location "The ship is half sunken, but the skull and crossbones still flies high. To the north is the beach." header="Shipwreck" {
+    on_command {
+      :match "climb -; climb mast; climb up" {
+        :goto "ship_crowsnest";
+      }
+    }
+  }
+  ship_crowsnest: location "The skull and crossbones still flies proudly in the wind." header="Crow's Nest" {
+   on_command {
+      :match "climb -; climb down" {
+        :goto "shipwreck";
+      }
+    }
+  }
   ship_captains: location "Half the room is submerged beneath dark water." header="Captain's Quarters" {
     on_command {
         :match "look water" {
           :print "You wonder what could be hiding beneath the surface.";
         }
-        :match "swim water; check water; feel water; search water; dive water; explore water; go water" {
+        :match "swim -; dive -; swim water; check water; feel water; search water; dive water; explore water; go water" {
           :if (has_not_created("chest_key")) {
               :print "You feel around beneath the water and grasp a small object.";
               :print "<you've found:<#777>> key";
@@ -902,6 +920,7 @@ objects {
   well: scenery "a well" at="village_square" msg="It looks like hasn't been used in some time. Seems deep.";
   vendor_booths: scenery "vendor booths" at="village_square" msg="You see the remains of fruit that rotted long ago and faded fabrics.";
   // elder hut
+  dust: scenery "dust" msg="You swipe your finger across the top of a surface.  Yep, dusty." at="village_hut";
   bed: scenery "a bed" msg="A cozy small bed." at="village_hut";
   kettle: scenery "a kettle" msg="A large kettle hangs over the fireplace, smells like grandma's chili." at="village_hut";
   fireplace: scenery "a fireplace" msg="Looks like it hasn't been used in many years." at="village_hut";
@@ -1350,6 +1369,10 @@ on_command {
 
   :if (is_carried("candle")) {
     :match "light candle" {
+      :if (is_candle_lit) {
+        :print "It's already lit!";
+        :done;
+      }
       :if (is_carried("matchbook")) {
         :print "You light the candle.";
         :set_true "is_candle_lit";
@@ -1748,10 +1771,17 @@ on_command {
   :if (is_present("coconut_trees")) {
     :match "climb tree" {
       :print "No way, the coconuts are up way too high. There must be another way.";
+      :done;
+    }
+    :match "get coconut" {
+      :if (!is_present("coconut")) {
+        :print "You wish you could, but they are up high in the trees.";
+        :done;
+      }
     }
     :match "eat coconut" {
       :if (!is_present("coconut")) {
-        :print "If only... they are up so high in the trees beyond your grasp.";
+        :print "If only... they are up high in the trees beyond your grasp.";
         :done;
       }
     }
@@ -2088,7 +2118,10 @@ on_command {
       :print "You didn't know water could taste this good.";
       :if (has_dreamed_of_storm) {
         :add_choice "dream again" { :set_false "has_dreamed_of_storm"; }
-        :add_choice "no thanks, just the water" { :done; }
+        :add_choice "no thanks, just the water" { 
+          :print "So refreshing.";
+          :done; 
+        }
         :choose "You recall your memories of the storm...";
       }
       :if (!has_dreamed_of_storm) {
@@ -2213,11 +2246,26 @@ on_command {
   
   // in the jungle
   :if (index_of { outer -> (d()) inner -> ("jungle") } != -1) {
+    :match "climb tree" {
+      :print "Why? There are no coconuts here.";
+      :done;
+    }
     :match "look jungle" {
       :print "A dense jungle, of the more tropical variety.";   
+      :done;
+    }
+    :match "chop tree; cut tree" {
+      :if (is_carried "axe") {
+        :print "Why? What did the poor tree ever do to you?";
+      } :else {
+        :print "You attempt your best karate chop...";
+        :print "... and now your hand hurts.";
+      }
+      :done;
     }
     :match "x trees" {
       :print "Huge. Tropical.";
+      :done;
     }
   }
 
@@ -2234,12 +2282,15 @@ on_command {
       :match "look beach" {
         :print "Such beautiful white sand.";
       }
+      :match "get sand" {
+        :print "The white sand slowly filters thru your fingers back onto the beach.";
+      }
       :match "look sand" {
-         :print "Your average beautiful white tropical island sand, and plenty of it.";
+        :print "Your average beautiful white tropical island sand, and plenty of it.";
       }
    }
 
-  :match "achievements -; achieve -; awards -" { :gosub "achievements"; }
+  :match "achievements -; achievement -; achieve -; awards -; score -" { :gosub "achievements"; }
   :match "wearing -" { :gosub "wearing"; }
   :match "clear -" { :clear_screen; }
   :match "goals - " { :gosub "goals"; }
@@ -2262,6 +2313,12 @@ on_command {
   }
 
   // CATCH ALL
+
+  :match "close eyes" {
+    :print "You close your eyes for just a moment.";
+    :print "Nothing spectacular happens.";
+    :done;
+  }
 
   :match "push *; pull *; drag *; move *; roll *" {
     :disambiguate_s1 "present";
@@ -2834,7 +2891,7 @@ subroutines {
   credits: subroutine {
     :print "^c^<✜ CREDITS ✜<13>>";
     :print "^n^<Story & Game Design:<#fc3>> Josh Goebel" ;
-    :print "^n^<Testing:<#fc3>> Rhiannon Stanton, Messick Family, Dee Cooke, <Tristin Grizel Dean<#369>>[https://grizel.itch.io/]" ;
+    :print "^n^<Testing:<#fc3>> Rhiannon Stanton, Messick Family, Dee Cooke, Christopher Merriner, <Tristin Grizel Dean<#369>>[https://grizel.itch.io/]" ;
     :print "^n^<Engine:<#fc3>> Adventuron 1.0 (Beta 68j), by Chris Ainsley" ;
     :print "^n^<Font:<#fc3>> Antic Slab from <Google Fonts<#369>>[https://fonts.google.com/specimen/Antic+Slab]" ;
     :print "^n^<Music:<#fc3>> Shane Iver of <Silverman Sound Studios<#369>>[https://www.silvermansound.com]" ;
